@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromptVault — AI Prompt Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-card-hover: #1a1a26;
+      --border: #1e1e2e;
+      --border-glow: #6c3cff30;
+      --text: #e4e4ef;
+      --text-dim: #8888a0;
+      --text-muted: #55556a;
+      --accent: #6c3cff;
+      --accent-glow: #8b5cf6;
+      --green: #22c55e;
+      --green-dim: #16a34a20;
+      --orange: #f59e0b;
+      --pink: #ec4899;
+      --blue: #3b82f6;
+      --cyan: #06b6d4;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* ===== HEADER ===== */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: #0a0a0fcc;
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 16px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .logo-text { font-size: 20px; font-weight: 700; color: var(--text); }
+    .logo-text span { color: var(--accent); }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .donate-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: #fff; border: none; border-radius: var(--radius);
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.3s;
+      text-decoration: none;
+    }
+    .donate-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px #6c3cff50; }
+
+    .prompt-count {
+      font-size: 13px; color: var(--text-dim);
+      padding: 6px 14px; background: var(--bg-card);
+      border-radius: 20px; border: 1px solid var(--border);
+    }
+    .prompt-count strong { color: var(--accent); }
+
+    /* ===== SEARCH BAR ===== */
+    .search-section {
+      max-width: 1200px; margin: 0 auto; padding: 32px 24px 8px;
+    }
+    .search-wrapper {
+      position: relative; max-width: 600px; margin: 0 auto;
+    }
+    .search-icon {
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); pointer-events: none;
+    }
+    .search-input {
+      width: 100%; padding: 14px 16px 14px 48px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: inherit; font-size: 15px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      outline: none;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px #6c3cff15;
+    }
+
+    /* ===== HERO / STATS ===== */
+    .hero {
+      text-align: center; padding: 40px 24px 20px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+    .hero h1 span { background: linear-gradient(135deg, var(--accent), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--text-dim); font-size: 16px; max-width: 500px; margin: 0 auto; }
+
+    .stats {
+      display: flex; justify-content: center; gap: 32px; padding: 24px 24px 8px;
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 800; color: var(--accent); }
+    .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ===== NAV TABS ===== */
+    .category-nav {
+      max-width: 1200px; margin: 0 auto; padding: 24px 24px 0;
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    }
+    .cat-tab {
+      padding: 8px 18px; border-radius: 20px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-dim); font-family: inherit; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .cat-tab:hover { border-color: var(--text-muted); color: var(--text); }
+    .cat-tab.active {
+      background: var(--accent); border-color: var(--accent);
+      color: #fff; box-shadow: 0 2px 12px #6c3cff40;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    .category-section { margin-bottom: 48px; display: none; }
+    .category-section.visible { display: block; }
+
+    .section-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .section-header h2 { font-size: 22px; font-weight: 700; }
+    .section-header .count {
+      margin-left: auto; font-size: 13px; color: var(--text-muted);
+      background: var(--bg-card); padding: 4px 12px; border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .subsection { margin-bottom: 28px; }
+    .subsection-title {
+      font-size: 14px; font-weight: 600; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 12px; padding-left: 4px;
+    }
+
+    .prompts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 12px;
+    }
+
+    /* ===== PROMPT CARD ===== */
+    .prompt-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      transition: all 0.25s;
+      position: relative;
+    }
+    .prompt-card:hover {
+      border-color: var(--border-glow);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px #0006;
+    }
+    .prompt-card-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .prompt-title { font-size: 14px; font-weight: 600; flex: 1; line-height: 1.4; }
+    .prompt-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .prompt-desc {
+      font-size: 12px; line-height: 1.5;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      border-left: 2px solid var(--accent);
+    }
+    .prompt-desc-full {
+      font-size: 14px; line-height: 1.7;
+      color: var(--text-dim);
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin: 12px 0;
+      border-left: 3px solid var(--accent);
+    }
+    .tag {
+      font-size: 11px; padding: 3px 8px; border-radius: 6px;
+      font-weight: 500;
+    }
+    .tag.easy { background: #22c55e18; color: var(--green); }
+    .tag.medium { background: #f59e0b18; color: var(--orange); }
+    .tag.advanced { background: #ec489918; color: var(--pink); }
+    .tag.all { background: #3b82f618; color: var(--blue); }
+    .tag.new { background: #06b6d418; color: var(--cyan); }
+
+    .prompt-preview {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; line-height: 1.6;
+      color: var(--text-dim);
+      background: #0a0a12;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      max-height: 120px; overflow: hidden;
+      position: relative; margin-bottom: 10px;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .prompt-preview::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+      background: linear-gradient(transparent, #0a0a12);
+    }
+
+    .prompt-card-actions {
+      display: flex; gap: 8px;
+    }
+    .copy-btn {
+      flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 12px;
+      background: var(--accent); color: #fff; border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .copy-btn:hover { background: var(--accent-glow); }
+    .copy-btn.copied { background: var(--green); }
+
+    .view-btn {
+      padding: 8px 12px;
+      background: transparent; color: var(--text-dim);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 12px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .view-btn:hover { border-color: var(--text-muted); color: var(--text); }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: #000a; backdrop-filter: blur(8px);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px;
+      max-width: 640px; width: 100%;
+      max-height: 80vh; overflow-y: auto;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text-dim); font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .modal-close:hover { border-color: var(--text-muted); color: var(--text); }
+    .modal h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .modal .prompt-full {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; line-height: 1.7;
+      color: var(--text-dim);
+      background: #0a0a12;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      white-space: pre-wrap; word-break: break-word;
+      margin: 16px 0;
+    }
+    .modal .copy-btn { font-size: 14px; padding: 10px 20px; }
+
+    /* ===== DONATION MODAL ===== */
+    .donation-modal .modal { text-align: center; max-width: 480px; }
+    .donation-modal .heart { font-size: 48px; margin-bottom: 16px; }
+    .donation-modal h3 { font-size: 24px; margin-bottom: 8px; }
+    .donation-modal p { color: var(--text-dim); margin-bottom: 24px; line-height: 1.7; }
+    .donation-amounts { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .amount-btn {
+      padding: 10px 24px; border-radius: var(--radius);
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); font-family: inherit; font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .amount-btn:hover, .amount-btn.selected {
+      border-color: var(--accent); background: #6c3cff15;
+    }
+    .donate-submit {
+      padding: 14px 40px; border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      color: #fff; border: none;
+      font-family: inherit; font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: all 0.3s;
+      margin-top: 8px;
+    }
+    .donate-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 20px #6c3cff50; }
+    .thank-you { display: none; text-align: center; padding: 32px 0; }
+    .thank-you.show { display: block; }
+    .thank-you .heart-big { font-size: 64px; margin-bottom: 16px; }
+    .thank-you h3 { font-size: 24px; margin-bottom: 8px; }
+    .thank-you p { color: var(--text-dim); line-height: 1.7; }
+    .donation-form { transition: opacity 0.3s; }
+    .donation-form.hidden { display: none; }
+
+    /* ===== FOOTER ===== */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--green); color: #fff;
+      padding: 10px 24px; border-radius: var(--radius);
+      font-size: 14px; font-weight: 600;
+      opacity: 0; transition: all 0.3s;
+      z-index: 2000; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      text-align: center; padding: 60px 24px;
+      display: none;
+    }
+    .empty-state.visible { display: block; }
+    .empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 18px; margin-bottom: 8px; }
+    .empty-state p { color: var(--text-dim); font-size: 14px; }
+
+    /* ===== BACK TO TOP ===== */
+    .back-to-top {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--accent); color: #fff; border: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; cursor: pointer;
+      opacity: 0; transition: all 0.3s;
+      z-index: 100;
+      box-shadow: 0 4px 16px #6c3cff50;
+    }
+    .back-to-top.visible { opacity: 1; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 24px; }
+      .prompts-grid { grid-template-columns: 1fr; }
+      .header-inner { padding: 12px 16px; }
+      .main { padding: 24px 16px 80px; }
+      .stats { gap: 20px; }
+      .modal { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo" onclick="showAll(); return false;">
+      <div class="logo-icon">⚡</div>
+      <div class="logo-text">Prompt<span>Vault</span></div>
+    </a>
+    <div class="header-actions">
+      <div class="prompt-count"><strong id="visibleCount">153</strong> prompts</div>
+      <a href="https://buymeacoffee.com/danialechoes" target="_blank" class="donate-btn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Donate
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>The Ultimate <span>AI Prompt</span> Library</h1>
+  <p>Curated, tested prompts for coding, marketing, writing, and more. Copy, paste, and get results.</p>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-num">123+</div><div class="stat-label">Prompts</div></div>
+  <div class="stat"><div class="stat-num">17</div><div class="stat-label">Categories</div></div>
+  <div class="stat"><div class="stat-num">Free</div><div class="stat-label">Forever</div></div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-section">
+  <div class="search-wrapper">
+    <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" class="search-input" placeholder="Search prompts... (e.g., 'React', 'email', 'SEO')" oninput="searchPrompts(this.value)">
+  </div>
+</div>
+
+<!-- CATEGORY NAV -->
+<div class="category-nav" id="categoryNav"></div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="mainContent"></div>
+
+<!-- EMPTY STATE -->
+<div class="empty-state" id="emptyState">
+  <div class="emoji">🔍</div>
+  <h3>No prompts found</h3>
+  <p>Try a different search term or browse categories above.</p>
+</div>
+
+<!-- MODAL: View Prompt -->
+<div class="modal-overlay" id="viewModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 id="modalTitle"></h3>
+    <div class="prompt-desc-full" id="modalDescription" style="display:none"></div>
+    <div class="prompt-full" id="modalPrompt"></div>
+    <button class="copy-btn" onclick="copyFromModal()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy Prompt
+    </button>
+  </div>
+</div>
+
+<!-- MODAL: Donation -->
+<div class="modal-overlay donation-modal" id="donationModal" onclick="if(event.target===this)closeDonation()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeDonation()">✕</button>
+    <div class="donation-form" id="donationForm">
+      <div class="heart">💜</div>
+      <h3>Support PromptVault</h3>
+      <p>This library is free and always will be. If these prompts saved you time, consider buying us a coffee. Your support keeps the project alive and helps us add more prompts.</p>
+      <div class="donation-amounts">
+        <button class="amount-btn" onclick="selectAmount(this, '$3')">$3</button>
+        <button class="amount-btn selected" onclick="selectAmount(this, '$5')">$5</button>
+        <button class="amount-btn" onclick="selectAmount(this, '$10')">$10</button>
+        <button class="amount-btn" onclick="selectAmount(this, '$25')">$25</button>
+      </div>
+      <button class="donate-submit" onclick="submitDonation()">Donate Now</button>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:12px;">No payment will be processed — this is a demo.</p>
+    </div>
+    <div class="thank-you" id="thankYou">
+      <div class="heart-big">❤️</div>
+      <h3>Thank You!</h3>
+      <p>Your support means the world to us. Every donation helps us keep this library free, add more prompts, and build new features. You're awesome!</p>
+      <button class="donate-submit" onclick="closeDonation()" style="margin-top:20px;background:var(--bg);border:1px solid var(--border);color:var(--text);">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✓ Copied to clipboard!</div>
+
+<!-- BACK TO TOP -->
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<!-- FOOTER -->
+<footer>
+  <p>PromptVault — Free AI Prompt Library. Made with care for the community.</p>
+  <p style="margin-top:8px;">Prompts are community-curated. Use responsibly.</p>
+</footer>
+
+<script>
+// ===== PROMPT DATA =====
+const categories = [
+  {
+    id: 'coding', name: 'Coding & Development', icon: '💻', color: '#3b82f6',
+    subsections: [
+      {
+        name: 'Code Generation',
+        prompts: [
+          { title: 'React Component Generator', difficulty: 'easy', tags: ['React','TypeScript'], prompt: 'Create a React TypeScript component called [ComponentName] that:\n- Accepts props: [describe props]\n- Uses [state management approach]\n- Renders [describe UI]\n- Handles [describe interactions]\n\nInclude proper TypeScript interfaces, error boundaries, and follow React best practices. Use functional components with hooks.', shortDescription: 'Generate a complete, production-ready React TypeScript component with props, state management, and best practices.', fullDescription: 'This prompt creates a fully-featured React component with TypeScript interfaces, proper error handling, accessibility attributes, and follows modern React patterns including hooks, memoization, and component composition. Specify your component name, props, state approach (useState, useReducer, Zustand, Redux), UI description, and interaction requirements.' },
+          { title: 'REST API Endpoint', difficulty: 'medium', tags: ['Node.js','Express'], prompt: 'Write a production-ready Express.js REST API endpoint for [resource name] that:\n- Route: [HTTP_METHOD] [path]\n- Validates request body with [validation library]\n- Connects to [database] using [ORM/ODM]\n- Implements proper error handling with custom error classes\n- Returns standardized JSON response format\n- Includes rate limiting and authentication middleware\n\nProvide the route file, controller, and any necessary model/schema.', shortDescription: 'Create a complete, production-ready REST API endpoint with validation, database integration, error handling, and security middleware.', fullDescription: 'Generates a full Express.js REST endpoint including route definition, controller logic, service layer, validation middleware (Zod/Joi), authentication (JWT/API key), rate limiting, standardized response formatting, and comprehensive error handling with custom error classes. Includes Prisma/Mongoose/Sequelize model definitions.' },
+          { title: 'Python Script Generator', difficulty: 'easy', tags: ['Python'], prompt: 'Write a Python script that [describe functionality]. Requirements:\n- Use [specific libraries if any]\n- Include type hints for all functions\n- Add docstrings following Google style\n- Handle exceptions gracefully\n- Include a main() function with argparse for CLI arguments\n- Add logging instead of print statements', shortDescription: 'Generate a well-structured Python script with type hints, docstrings, CLI args, logging, and error handling.', fullDescription: 'Creates a production-ready Python script following best practices: type hints for all functions, Google-style docstrings, argparse for command-line interface, structured logging with levels, proper exception handling with custom exceptions, and a main() entry point. Specify the script purpose and any required libraries.' },
+          { title: 'Database Schema Design', difficulty: 'advanced', tags: ['SQL','Database'], prompt: 'Design a PostgreSQL database schema for [application type] that:\n- Includes tables: [list tables or describe entities]\n- Has proper relationships (1:1, 1:N, M:N)\n- Includes indexes for common query patterns\n- Uses appropriate data types and constraints\n- Includes created_at/updated_at timestamps\n- Add row-level security policies if needed\n\nProvide CREATE TABLE statements with comments explaining design decisions.', shortDescription: 'Design a complete PostgreSQL schema with tables, relationships, indexes, constraints, and security policies.', fullDescription: 'Generates a comprehensive database schema with CREATE TABLE statements, foreign keys, indexes optimized for query patterns, check constraints, triggers for updated_at, row-level security policies, and detailed comments explaining each design decision. Includes normalization analysis and migration strategy.' },
+          { title: 'Git Commit Message', difficulty: 'easy', tags: ['Git'], prompt: 'Generate a conventional commit message for the following changes:\n[Paste your git diff or describe changes]\n\nFormat: type(scope): subject\n\nWhere type is one of: feat, fix, docs, style, refactor, test, chore\nKeep subject under 50 chars, body wraps at 72 chars.', shortDescription: 'Create properly formatted conventional commit messages from your git diff or change description.', fullDescription: 'Analyzes your code changes and generates a conventional commit message following the Angular/Conventional Commits specification. Provides type (feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert), optional scope, concise subject line, and detailed body explaining the what and why. Includes breaking change footer when applicable.' },
+          { title: 'GraphQL Schema & Resolvers', difficulty: 'advanced', tags: ['GraphQL','API'], prompt: 'Design a GraphQL schema and resolvers for [feature/domain]:\n\nEntities: [list main types]\nRelationships: [describe connections]\nQueries needed: [list]\nMutations needed: [list]\nSubscriptions: [if real-time needed]\n\nInclude: type definitions, input types, enums, interfaces/unions, resolver functions with DataLoader for N+1 prevention, authentication directives, and error handling.', shortDescription: 'Generate a complete GraphQL schema with types, queries, mutations, subscriptions, and optimized resolvers.', fullDescription: 'Creates a production-ready GraphQL API including SDL schema with all types, inputs, enums, and directives; resolver implementations with DataLoader batching for N+1 prevention; authentication/authorization directives; custom scalars; subscription setup with PubSub; and comprehensive error handling with extensions.' },
+          { title: 'Dockerfile & Docker Compose', difficulty: 'medium', tags: ['Docker','DevOps'], prompt: 'Create a multi-stage Dockerfile and docker-compose.yml for a [language/framework] application:\n\nApp details: [describe]\nDependencies: [list]\nEnvironment variables: [list]\nPorts: [expose]\nDatabase: [PostgreSQL/MySQL/MongoDB/Redis]\n\nRequirements: minimal image size, security best practices, non-root user, build caching optimization, health checks, and development/production compose overrides.', shortDescription: 'Build optimized Docker configurations with multi-stage builds, security hardening, and compose for dev/prod.', fullDescription: 'Generates a production-grade Dockerfile using multi-stage builds for minimal image size, proper layer caching, non-root user, distroless/alpine base images, vulnerability scanning considerations, and docker-compose files for development (with hot reload) and production (with replicas, healthchecks, resource limits, and secrets management).' },
+          { title: 'Unit Test Generator', difficulty: 'medium', tags: ['Testing','TDD'], prompt: 'Write comprehensive unit tests for the following code:\n\n```\n[paste your function/class]\n```\n\nFramework: [Jest/Vitest/Pytest/Go testing/JUnit]\nCoverage goals: [percentage]\nTest types: [unit/integration/contract]\nInclude: happy path, edge cases, error conditions, mocking strategies, and parameterized tests.', shortDescription: 'Generate thorough unit tests with high coverage including edge cases, mocking, and parameterized tests.', fullDescription: 'Creates comprehensive test suites using your specified framework covering all branches, edge cases, and error paths. Includes test factories/fixtures, mock implementations for external dependencies, parameterized test cases for multiple inputs, snapshot testing where applicable, and follows AAA (Arrange-Act-Assert) pattern with descriptive test names.' },
+          { title: 'AI Pair Programming Partner', difficulty: 'medium', tags: ['AI','Pair Programming'], prompt: 'Act as my senior pair programming partner while I work on [language/framework] code.\n\nMy experience level: [beginner/intermediate/advanced]\nCurrent task: [describe what I am building]\nCode so far:\n```\n[paste your code]\n```\n\nGuide me through this by:\n1. First, understanding my approach and what I am trying to achieve\n2. Suggesting improvements or alternative approaches with clear explanations\n3. Pointing out potential edge cases or bugs before I encounter them\n4. Explaining the reasoning behind each suggestion (teach me, don\'t just fix)\n5. Writing small code snippets to illustrate concepts\n6. Asking me questions that help me reach the right solution myself\n\nBe conversational but precise. Use the Socratic method where possible.', shortDescription: 'Get a senior pair programming partner that guides you through code challenges using the Socratic method.', fullDescription: 'Transforms the AI into an interactive pair programming partner that assesses your code, suggests improvements, identifies edge cases, and explains reasoning behind each suggestion. Uses the Socratic method to help you reach solutions independently while providing expert guidance on architecture, best practices, and potential bugs.' },
+        ]
+      },
+      {
+        name: 'Code Review & Debugging',
+        prompts: [
+          { title: 'Code Review Assistant', difficulty: 'medium', tags: ['Review'], prompt: 'Review the following code for:\n1. Bugs and logical errors\n2. Security vulnerabilities\n3. Performance issues\n4. Code style and best practices\n5. Error handling gaps\n6. Potential race conditions\n\nFor each issue found, provide:\n- Severity (critical/warning/info)\n- Line reference\n- Explanation\n- Suggested fix with code\n\nCode to review:\n[Paste code here]', shortDescription: 'Get a comprehensive code review covering bugs, security, performance, style, and best practices with severity ratings.', fullDescription: 'Performs a thorough code review analyzing six critical dimensions: correctness (logic bugs, edge cases), security (injection, auth bypass, data exposure), performance (algorithmic complexity, N+1 queries, memory leaks), maintainability (naming, coupling, DRY, SOLID), error handling (missing try/catch, unhandled promises), and concurrency (race conditions, deadlocks). Each finding includes severity, location, explanation, and corrected code.' },
+          { title: 'Bug Detective', difficulty: 'medium', tags: ['Debugging'], prompt: 'I have a bug in my [language/framework] code. Help me debug it systematically.\n\nExpected behavior: [what should happen]\nActual behavior: [what is happening]\nError message: [paste error]\nRelevant code:\n```\n[paste code]\n```\n\nGuide me through:\n1. Identifying the root cause\n2. Adding strategic console.log/breakpoints\n3. Testing the fix\n4. Preventing similar bugs', shortDescription: 'Systematic debugging assistant that guides you through root cause analysis, strategic logging, and fix verification.', fullDescription: 'Acts as a senior debugging partner using scientific method: reproduces the issue, forms hypotheses, suggests targeted logging/breakpoints to isolate the problem, verifies the fix with test cases, and recommends preventive measures like assertions, type safety improvements, or architectural changes.' },
+          { title: 'Performance Optimizer', difficulty: 'advanced', tags: ['Performance'], prompt: 'Analyze this code for performance issues and suggest optimizations:\n\n```\n[paste code]\n```\n\nContext:\n- Expected load: [requests/second or data size]\n- Current performance: [describe bottleneck]\n- Environment: [runtime, hardware]\n\nProvide:\n1. Identified bottlenecks ranked by impact\n2. Specific optimizations with code examples\n3. Expected performance improvement\n4. Trade-offs of each optimization', shortDescription: 'Deep performance analysis with bottleneck identification, specific optimizations, and expected improvements.', fullDescription: 'Performs algorithmic complexity analysis, identifies CPU/memory/I/O bottlenecks, suggests optimizations like caching, lazy loading, batching, connection pooling, algorithm improvements, and provides before/after benchmarks estimates. Includes trade-off analysis for each optimization (complexity, maintainability, cost).' },
+          { title: 'Security Audit', difficulty: 'advanced', tags: ['Security','Audit'], prompt: 'Perform a security audit on this code:\n\n```\n[paste code]\n```\n\nApplication context: [web API, mobile backend, etc.]\nThreat model: [what you are protecting against]\nCompliance requirements: [OWASP, SOC2, GDPR, HIPAA, PCI-DSS]\n\nCheck for: injection, auth flaws, sensitive data exposure, XXE, broken access control, security misconfig, XSS, insecure deserialization, vulnerable components, insufficient logging.', shortDescription: 'Comprehensive security audit checking OWASP Top 10 and compliance requirements with remediation guidance.', fullDescription: 'Conducts a thorough security review against OWASP Top 10, CWE/SANS Top 25, and specified compliance frameworks. Identifies vulnerabilities with CVSS scores, provides proof-of-concept exploits where safe, and gives prioritized remediation with secure code examples. Covers authentication, authorization, input validation, encryption, secrets management, and logging.' },
+        ]
+      },
+      {
+        name: 'Architecture & Design',
+        prompts: [
+          { title: 'System Design Document', difficulty: 'advanced', tags: ['Architecture'], prompt: 'Design a scalable system architecture for [application type]:\n\nRequirements:\n- Users: [expected number]\n- Traffic: [requests per second]\n- Data: [volume and type]\n- Latency: [acceptable response time]\n\nProvide:\n1. High-level architecture diagram (ASCII)\n2. Technology stack recommendations\n3. Database design (SQL vs NoSQL decision)\n4. Caching strategy\n5. API design (REST vs GraphQL)\n6. Deployment architecture\n7. Cost estimation', shortDescription: 'Complete system design with architecture diagram, tech stack, database, caching, API, deployment, and cost analysis.', fullDescription: 'Creates a comprehensive system design document including: ASCII architecture diagrams showing components and data flows; justified technology choices (language, framework, database, message queue, cache, monitoring); database schema with scaling strategy (sharding, read replicas); multi-layer caching (CDN, Redis, application-level); API contract design; Kubernetes/ECS deployment manifests; and monthly cost breakdown by component.' },
+          { title: 'Microservices Decomposition', difficulty: 'advanced', tags: ['Microservices'], prompt: 'Help me decompose this monolithic application into microservices:\n\nCurrent monolith features:\n[Describe your application and its main features]\n\nAnalyze and provide:\n1. Service boundaries using Domain-Driven Design\n2. Service decomposition with responsibilities\n3. Communication patterns (sync/async)\n4. Data management strategy\n5. Migration roadmap (phases)\n6. Risk assessment for each service extraction', shortDescription: 'Domain-driven microservices decomposition with boundaries, communication patterns, data strategy, and migration roadmap.', fullDescription: 'Applies Domain-Driven Design to identify bounded contexts, defines service boundaries with clear ownership, specifies synchronous (REST/gRPC) and asynchronous (Kafka/RabbitMQ) communication patterns, designs data ownership and saga patterns for distributed transactions, creates a phased migration strategy with strangler fig pattern, and assesses operational risks for each extraction.' },
+          { title: 'API Design Specification', difficulty: 'medium', tags: ['API','Design'], prompt: 'Design a complete API specification for [domain]:\n\nResources: [list]\nOperations per resource: [CRUD + custom]\nAuthentication: [JWT/API Key/OAuth]\nRate limiting: [tiers]\nVersioning strategy: [URL/header]\n\nProvide: OpenAPI 3.0 spec, error code catalog, pagination standard, filtering/sorting conventions, webhook design, SDK generation notes, and deprecation policy.', shortDescription: 'Complete OpenAPI 3.0 specification with standards for errors, pagination, filtering, versioning, and webhooks.', fullDescription: 'Generates a production-ready OpenAPI 3.0 document with all paths, schemas, parameters, responses, security schemes, and examples. Establishes consistent conventions for pagination (cursor/offset), filtering (RSQL), sorting, error responses (RFC 7807), rate limit headers, idempotency keys, webhook signatures, and versioning strategy. Includes SDK generation configuration for TypeScript, Python, and Go.' },
+        ]
+      },
+      {
+        name: 'DevOps & Infrastructure',
+        prompts: [
+          { title: 'CI/CD Pipeline', difficulty: 'medium', tags: ['CI/CD','GitHub Actions','GitLab'], prompt: 'Create a CI/CD pipeline for a [language/framework] project:\n\nStages needed: lint, test, build, security scan, deploy\nEnvironments: dev, staging, production\nDeployment strategy: [blue-green/canary/rolling]\nInfrastructure: [Kubernetes/ECS/Vercel/Netlify]\n\nInclude: matrix testing, dependency caching, artifact storage, approval gates, rollback procedure, and notifications.', shortDescription: 'Production-ready CI/CD pipeline with multi-environment deployment, security scanning, and rollback capability.', fullDescription: 'Creates a complete CI/CD workflow (GitHub Actions/GitLab CI) with: parallel job matrix for multi-version testing; dependency caching for speed; SAST/DAST/SCA security scanning; container image building with multi-arch support; environment promotion with manual approvals; blue-green/canary deployment with health checks; automated rollback on metric degradation; and Slack/Teams/Discord notifications.' },
+          { title: 'Kubernetes Manifests', difficulty: 'advanced', tags: ['Kubernetes','Helm'], prompt: 'Generate Kubernetes manifests for deploying [application]:\n\nComponents: [API, worker, frontend, database, cache]\nReplicas: [per environment]\nResources: [CPU/memory requests/limits]\nAuto-scaling: [HPA/VPA configs]\nNetworking: [ingress, service mesh, mTLS]\nStorage: [PVC requirements]\nSecrets: [ExternalSealed/Vault/CSI]\n\nProvide: Deployment, Service, Ingress, HPA, PDB, NetworkPolicy, ConfigMap, Secret, and Helm chart structure.', shortDescription: 'Complete K8s manifests with Deployments, Services, Ingress, HPA, PDB, NetworkPolicy, and Helm chart.', fullDescription: 'Generates production-grade Kubernetes resources: Deployments with rolling updates and lifecycle hooks; Services with proper selectors and port mapping; Ingress with TLS, annotations, and path routing; HorizontalPodAutoscaler with custom metrics; PodDisruptionBudget for HA; NetworkPolicies for zero-trust; ConfigMaps/Secrets with External Secrets Operator; and a complete Helm chart with values.yaml per environment, helpers, and dependency management.' },
+          { title: 'Terraform Module', difficulty: 'advanced', tags: ['Terraform','IaC'], prompt: 'Create a reusable Terraform module for [AWS/GCP/Azure] resource:\n\nResource type: [VPC, EKS, RDS, CloudSQL, etc.]\nRequirements: [multi-AZ, encryption, backup, monitoring]\nInputs: [variables with validation]\nOutputs: [IDs, ARNs, endpoints]\nStandards: [naming, tagging, compliance]\n\nInclude: main.tf, variables.tf, outputs.tf, versions.tf, README.md, examples/, and tests/.', shortDescription: 'Production-ready Terraform module with validation, documentation, examples, and tests.', fullDescription: 'Creates a reusable, versioned Terraform module following best practices: input variables with type constraints and validation rules; comprehensive outputs for cross-module references; provider version pinning; detailed README with usage examples; example configurations for dev/staging/prod; Terratest/Unit tests; pre-commit hooks for fmt/validate/docs; and compliance checks (tagging, encryption, public access prevention).' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'marketing', name: 'Marketing & SEO', icon: '📈', color: '#f59e0b',
+    subsections: [
+      {
+        name: 'Content Marketing',
+        prompts: [
+          { title: 'Blog Post Outline', difficulty: 'easy', tags: ['Content','SEO'], prompt: 'Create a comprehensive blog post outline for the topic: "[your topic]"\n\nTarget audience: [describe audience]\nGoal: [educate/convert/engage]\nWord count target: [1500/2500/4000]\n\nInclude:\n1. SEO-optimized title (under 60 chars)\n2. Meta description (under 155 chars)\n3. H2 and H3 headings with keyword variations\n4. Key points under each section\n5. Suggested internal/external links\n6. FAQ section for featured snippets\n7. CTA suggestions', shortDescription: 'Create SEO-optimized blog outlines with headings, meta descriptions, keyword variations, and CTA suggestions.', fullDescription: 'Generates comprehensive blog post outlines including SEO-optimized titles under 60 chars, meta descriptions under 155 chars, H2 and H3 heading structures with keyword variations, key points per section, suggested internal and external links, FAQ sections for featured snippets, and tailored calls to action based on your target audience and content goals.' },
+          { title: 'Social Media Content Calendar', difficulty: 'medium', tags: ['Social Media'], prompt: 'Create a 7-day social media content calendar for [brand/niche]:\n\nPlatforms: [Instagram/Twitter/LinkedIn/TikTok]\nBrand voice: [describe]\nTarget audience: [describe]\nContent pillars: [education, entertainment, promotion, etc.]\n\nFor each day provide:\n- Platform\n- Content type (carousel, reel, story, thread, post)\n- Caption with hashtags\n- Best posting time\n- Engagement prompt (question/CTA)', shortDescription: 'Plan a 7-day social media calendar with platform-specific content types, captions, hashtags, and posting times.', fullDescription: 'Designs a complete weekly content calendar for Instagram, Twitter, LinkedIn, and TikTok including daily content types (carousel, reel, story, thread, post), platform-optimized captions with hashtag strategies, best posting times based on audience behavior, engagement prompts with questions and CTAs, and alignment with your brand voice and content pillars.' },
+          { title: 'Email Newsletter', difficulty: 'medium', tags: ['Email Marketing'], prompt: 'Write a weekly newsletter email for [topic/niche]:\n\nSubject line options (3 A/B test variants)\nPreview text\nOpening hook (personal story or statistic)\nMain content section with [topic]\n3 curated links/resources\nCTA section\nPS line with social proof\n\nTone: [casual/professional/witty]\nAudience: [describe]\nGoal: [drive traffic/build trust/convert]', shortDescription: 'Write engaging newsletter emails with A/B test subject lines, preview text, curated links, and conversion-driven CTAs.', fullDescription: 'Crafts a complete weekly newsletter including three A/B testable subject line variants, compelling preview text, a hook using personal stories or statistics, main content section, three curated links or resources, a clear CTA section, a PS line with social proof, and tone calibrated to your audience and campaign goals.' },
+          { title: 'Viral Hook Generator', difficulty: 'easy', tags: ['Viral','Content'], prompt: 'Generate 10 viral hook ideas for content about [topic/niche].\n\nContent format: [blog post/video/social post/podcast]\nTarget platform: [TikTok/Instagram/YouTube/LinkedIn/Twitter]\nTarget audience: [describe]\nBrand voice: [casual/professional/edgy/educational]\n\nFor each hook, use a different pattern:\n1. Bold statement / Controversial opinion\n2. Relatable struggle opener\n3. Curiosity gap / cliffhanger\n4. Statistic or data shock\n5. "I tried X so you don\'t have to"\n6. "The #1 mistake people make"\n7. Story opener (3 sentences max)\n8. Challenge or dare\n9. "Stop doing X" pattern\n10. Question to the audience\n\nEach hook: Write it exactly as it would appear, explain why it works psychologically, and suggest the ideal CTA to follow it.', shortDescription: 'Generate 10 viral hooks using proven psychological patterns for any platform or content format.', fullDescription: 'Creates 10 different hook variations using patterns proven to drive engagement: bold statements, relatable struggles, curiosity gaps, data shocks, story openers, and more. Each hook includes the exact text, psychological explanation of why it works, and the ideal follow-up CTA. Covers TikTok, Instagram, YouTube, LinkedIn, and Twitter formats.' },
+        ]
+      },
+      {
+        name: 'SEO',
+        prompts: [
+          { title: 'Keyword Research Strategy', difficulty: 'medium', tags: ['SEO','Research'], prompt: 'Develop a keyword research strategy for [niche/industry]:\n\nBusiness type: [B2B/B2C]\nCurrent domain authority: [estimate]\nCompetitors: [list 3-5]\n\nProvide:\n1. 20 primary keywords with search volume and difficulty\n2. 30 long-tail keyword variations\n3. Question-based keywords (People Also Ask)\n4. Keyword clustering by intent (informational, commercial, transactional)\n5. Content mapping for each cluster\n6. Quick-win opportunities (high volume, low competition)', shortDescription: 'Develop data-driven keyword strategies with primary keywords, long-tail variations, and content mapping by intent.', fullDescription: 'Creates a comprehensive keyword research plan including 20 primary keywords with search volume and difficulty estimates, 30 long-tail variations, question-based keywords from People Also Ask data, clustering by search intent (informational, commercial, transactional), content mapping for each cluster, and quick-win opportunities targeting high volume with low competition.' },
+          { title: 'SEO Audit Checklist', difficulty: 'medium', tags: ['SEO','Technical'], prompt: 'Perform a comprehensive SEO audit for [website URL] covering:\n\n1. Technical SEO:\n   - Page speed and Core Web Vitals\n   - Mobile responsiveness\n   - XML sitemap and robots.txt\n   - Canonical tags and redirects\n   - Structured data/schema markup\n\n2. On-Page SEO:\n   - Title tags and meta descriptions\n   - Header hierarchy\n   - Image alt text\n   - Internal linking\n   - Content quality and keyword usage\n\n3. Off-Page SEO:\n   - Backlink profile analysis\n   - Domain authority\n   - Local SEO (if applicable)\n\nPrioritize fixes by impact and effort.', shortDescription: 'Perform comprehensive SEO audits covering technical, on-page, and off-page factors with prioritized fix recommendations.', fullDescription: 'Provides a complete SEO audit framework including technical analysis (Core Web Vitals, mobile responsiveness, XML sitemaps, canonical tags, structured data), on-page evaluation (title tags, meta descriptions, header hierarchy, image alt text, internal linking, content quality), and off-page assessment (backlink profile, domain authority, local SEO). Each finding is prioritized by impact and effort.' },
+          { title: 'Meta Description Generator', difficulty: 'easy', tags: ['SEO','Copywriting'], prompt: 'Generate 5 meta description variants for the page:\nURL: [page URL]\nTarget keyword: [primary keyword]\nPage purpose: [what the page offers]\n\nRequirements:\n- Under 155 characters each\n- Include the target keyword naturally\n- Include a call-to-action\n- Create urgency or curiosity\n- Unique angle in each variant\n\nAlso provide the optimal title tag (under 60 chars).', shortDescription: 'Generate five SEO meta description variants with target keywords, CTAs, and urgency hooks under 155 characters.', fullDescription: 'Produces five unique meta description variants for any page, each under 155 characters with natural keyword integration, compelling calls to action, urgency or curiosity triggers, and distinct angles. Also provides the optimal title tag under 60 characters with keyword placement and click-through rate optimization considerations.' },
+        ]
+      },
+      {
+        name: 'Advertising',
+        prompts: [
+          { title: 'Google Ads Copy', difficulty: 'medium', tags: ['PPC','Google Ads'], prompt: 'Create Google Ads copy for [product/service]:\n\nProduct: [describe]\nTarget audience: [describe]\nUSP: [unique selling proposition]\nBudget tier: [low/medium/high]\n\nProvide:\n1. 3 Responsive Search Ad variations:\n   - 15 headlines (30 chars each)\n   - 4 descriptions (90 chars each)\n2. 2 Display Ad copies\n3. 3 YouTube pre-roll scripts (15 sec)\n4. Keyword themes to target\n5. Negative keyword suggestions', shortDescription: 'Create high-performing Google Ads with responsive search ads, display ads, video scripts, and negative keyword lists.', fullDescription: 'Builds complete Google Ads campaigns including three Responsive Search Ad variations with 15 headlines (30 chars each) and 4 descriptions (90 chars each), two Display Ad copies, three 15-second YouTube pre-roll scripts, keyword themes organized by match type, and negative keyword suggestions to optimize ad spend and reduce wasted impressions.' },
+          { title: 'Facebook/Instagram Ad Creative', difficulty: 'medium', tags: ['Social Ads','Meta'], prompt: 'Write Facebook/Instagram ad copy for [product/service]:\n\nCampaign objective: [awareness/traffic/conversions]\nTarget audience: [detailed demographics and interests]\nOffer: [discount/free trial/etc]\n\nProvide:\n1. Primary text (3 variations, 125 chars max)\n2. Headlines (5 variations, 40 chars max)\n3. Description (30 chars max)\n4. CTA button recommendation\n5. Creative direction notes\n6. Audience targeting suggestions\n7. A/B testing recommendations', shortDescription: 'Write Meta ad copy with primary text, headlines, creative direction, audience targeting, and A/B testing recommendations.', fullDescription: 'Generates Facebook and Instagram ad creative including three primary text variations under 125 characters, five headline options under 40 characters, description text, CTA button recommendations, visual creative direction notes, detailed audience targeting suggestions with demographics and interests, and a structured A/B testing plan for continuous optimization.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'writing', name: 'Writing & Content', icon: '✍️', color: '#ec4899',
+    subsections: [
+      {
+        name: 'Creative Writing',
+        prompts: [
+          { title: 'Story Generator', difficulty: 'medium', tags: ['Fiction','Creative'], prompt: 'Write a [flash fiction/short story] with the following parameters:\n\nGenre: [sci-fi/fantasy/horror/literary/thriller]\nSetting: [time period, location]\nProtagonist: [age, occupation, key trait]\nCentral conflict: [internal/external]\nTheme: [what the story explores]\nTone: [dark/hopeful/satirical/realistic]\nLength: [word count]\n\nInclude:\n- Opening hook that grabs attention\n- Show don\'t tell descriptions\n- Dialogue that reveals character\n- A twist or unexpected ending\n- Sensory details (sight, sound, smell, touch, taste)', shortDescription: 'Write flash fiction or short stories with genre-specific elements, sensory details, dialogue, and unexpected twists.', fullDescription: 'Creates complete short stories based on your specified genre, setting, protagonist details, central conflict, theme, and tone. Includes attention-grabbing opening hooks, show-don\'t-tell sensory descriptions, character-revealing dialogue, plot twists or unexpected endings, and sensory details spanning sight, sound, smell, touch, and taste to create immersive fiction.' },
+          { title: 'Character Profile Builder', difficulty: 'easy', tags: ['Character Design'], prompt: 'Create a detailed character profile for a [genre] story:\n\nRole: [protagonist/antagonist/supporting]\nName: [if specified or generate]\n\nInclude:\n1. Physical appearance (3 distinctive features)\n2. Personality (MBTI type, strengths, flaws)\n3. Background (childhood, formative events)\n4. Motivation (what drives them)\n5. Fear (what holds them back)\n6. Speech pattern and vocabulary\n7. Relationships with other characters\n8. Character arc (how they change)\n9. Three defining moments from their past\n10. A secret they keep from everyone', shortDescription: 'Build detailed character profiles with appearance, personality, backstory, motivations, fears, and character arc.', fullDescription: 'Develops comprehensive character profiles for any genre including physical appearance with three distinctive features, MBTI personality typing with strengths and flaws, formative childhood events, core motivations and fears, speech patterns and vocabulary, relationship dynamics with other characters, a complete character arc, three defining life moments, and a secret that shapes their behavior.' },
+        ]
+      },
+      {
+        name: 'Business Writing',
+        prompts: [
+          { title: 'Professional Email', difficulty: 'easy', tags: ['Email','Business'], prompt: 'Write a professional email:\n\nTo: [recipient role/relationship]\nPurpose: [request/update/negotiation/introduction]\nKey points: [list main points]\nTone: [formal/semi-formal/friendly]\nUrgency: [immediate/flexible]\n\nInclude:\n- Subject line (clear and specific)\n- Appropriate greeting and closing\n- Clear body with short paragraphs\n- Specific call to action\n- Professional sign-off\n\nKeep it under 200 words. Make every word count.', shortDescription: 'Write clear, professional emails with targeted subject lines, structured body, and specific calls to action under 200 words.', fullDescription: 'Composes polished professional emails for any purpose including clear and specific subject lines, appropriate greetings and closings, well-structured body text with short paragraphs, specific calls to action tailored to the recipient relationship, tone calibrated to formality requirements, all under 200 words with every sentence serving a clear purpose.' },
+          { title: 'Business Proposal', difficulty: 'advanced', tags: ['Proposal','Business'], prompt: 'Write a business proposal for [service/product]:\n\nClient: [company name and brief description]\nProblem: [their pain point]\nSolution: [your offering]\nBudget range: [estimate]\nTimeline: [expected duration]\n\nStructure:\n1. Executive Summary (3 sentences)\n2. Problem Statement\n3. Proposed Solution\n4. Methodology/Approach\n5. Timeline with milestones\n6. Investment breakdown\n7. Expected outcomes/ROI\n8. Case study or social proof\n9. Next steps\n10. Terms and conditions summary', shortDescription: 'Write persuasive business proposals with executive summaries, solutions, timelines, investment breakdowns, and ROI projections.', fullDescription: 'Crafts complete business proposals including a concise executive summary, detailed problem statement, proposed solution with methodology, milestone-based timeline, transparent investment breakdown, expected outcomes with ROI projections, relevant case studies or social proof, clear next steps, and a summary of terms and conditions for client review.' },
+          { title: 'Meeting Agenda', difficulty: 'easy', tags: ['Meetings','Productivity'], prompt: 'Create a meeting agenda for:\n\nMeeting type: [standup/planning/retrospective/client meeting]\nDuration: [minutes]\nAttendees: [roles]\nObjective: [what needs to be decided/accomplished]\n\nInclude:\n- Pre-meeting preparation items\n- Timed agenda items\n- Discussion topics with allocated time\n- Decision points\n- Action item template\n- Parking lot for off-topic items\n- Follow-up expectations', shortDescription: 'Create structured meeting agendas with timed items, decision points, action items, and follow-up plans.', fullDescription: 'Generates effective meeting agendas for standups, planning sessions, retrospectives, or client meetings including pre-meeting preparation items, timed agenda items with allocated durations, clear discussion topics, specific decision points requiring group input, action item templates with owners, a parking lot for off-topic discussions, and follow-up expectations with deadlines.' },
+        ]
+      },
+      {
+        name: 'Technical Writing',
+        prompts: [
+          { title: 'API Documentation Generator', difficulty: 'medium', tags: ['API','Documentation'], prompt: 'Write clear, developer-friendly API documentation for [API name].\n\nAPI type: [REST/GraphQL/gRPC/WebSocket]\nAuthentication: [API key/OAuth/JWT/Bearer token]\nBase URL: [URL]\nEndpoints to document: [list]\n\nFor each endpoint provide:\n1. Endpoint path and HTTP method\n2. Description of what it does\n3. Request headers and authentication requirements\n4. Request body parameters with types, required/optional, and examples\n5. Response format with status codes and example payloads\n6. Error responses and what they mean\n7. Rate limiting details\n8. Code example in [language] showing usage\n\nAlso include: getting started guide, authentication overview, error code reference table, SDK usage examples, and a changelog template.', shortDescription: 'Write developer-friendly API docs with endpoint specs, code examples, error codes, and getting-started guides.', fullDescription: 'Generates comprehensive API documentation covering all endpoints with path, method, description, headers, request parameters with types and examples, response formats with status codes, error responses with meanings, rate limiting details, and code examples in your specified language. Includes getting started guide, authentication overview, error code reference, SDK usage examples, and changelog template.' },
+          { title: 'Technical Blog Post', difficulty: 'medium', tags: ['Technical','Blog'], prompt: 'Write a technical blog post about [topic].\n\nTarget audience: [junior/mid-level/senior engineers]\nPrerequisite knowledge: [what readers should know]\nKey points to cover: [list 3-5]\nPost length: [1500-3000 words]\n\nStructure:\n1. Title and subtitle (keyword-optimized, clear)\n2. Opening: Hook with a real problem or question\n3. Background context (what led to this topic)\n4. Deep dive with:\n   - Code examples (with explanations)\n   - Architecture diagrams (ASCII or described)\n   - Benchmarks or comparisons\n   - Common pitfalls and how to avoid them\n5. Key takeaways (3-5 bullet points)\n6. Discussion questions or next steps\n\nTone: [conversational/authoritative/teaching]\nInclude: code blocks with syntax hints and a "further reading" section.', shortDescription: 'Write in-depth technical blog posts with code examples, architecture insights, benchmarks, and actionable takeaways.', fullDescription: 'Creates a complete technical blog post with SEO-optimized title, a hook grounded in a real engineering problem, background context, a deep dive section with annotated code examples, described architecture diagrams, performance benchmarks or comparisons, common pitfalls with solutions, key takeaways, discussion questions, and a further reading section. Tailored for junior through senior engineer audiences.' },
+        ]
+      },
+      {
+        name: 'Academic & Research',
+        prompts: [
+          { title: 'Research Paper Outline', difficulty: 'advanced', tags: ['Research','Academic'], prompt: 'Create a research paper outline on: "[topic]"\n\nField: [academic discipline]\nPaper type: [literature review/empirical/theoretical]\nTarget journal/level: [journal name or graduate/undergraduate]\n\nOutline:\n1. Title (3 options, keyword-rich)\n2. Abstract structure (Background, Methods, Results, Conclusion)\n3. Introduction (background, gap, research question, significance)\n4. Literature Review (themes and debates)\n5. Methodology (approach, data collection, analysis)\n6. Expected Results/Findings\n7. Discussion (implications, limitations)\n8. Conclusion\n9. References strategy (key databases and search terms)', shortDescription: 'Develop comprehensive research paper outlines with title options, abstract structure, methodology, and reference strategies.', fullDescription: 'Creates structured research paper outlines including three keyword-rich title options, abstract structure following Background-Methods-Results-Conclusion format, introduction with background and research gap, themed literature review sections, detailed methodology with approach and analysis plan, expected findings, discussion of implications and limitations, and a reference strategy with key databases.' },
+          { title: 'Literature Review Synthesizer', difficulty: 'advanced', tags: ['Research','Review'], prompt: 'Help me synthesize these sources for a literature review:\n\nTopic: [your research topic]\nSources:\n[List key papers/books with brief descriptions]\n\nI need:\n1. Thematic grouping of sources\n2. Key findings across studies\n3. Points of agreement and disagreement\n4. Methodological comparisons\n5. Gaps in the current literature\n6. How my research fits in\n7. Suggested narrative flow', shortDescription: 'Synthesize multiple academic sources with thematic grouping, key findings, methodological comparisons, and research gaps.', fullDescription: 'Analyzes and organizes your research sources into a coherent literature review including thematic grouping of related studies, synthesis of key findings across the literature, identification of points of agreement and disagreement between sources, methodological comparisons, gaps and opportunities in current research, positioning of your research within the field, and a suggested narrative flow.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'business', name: 'Business & Strategy', icon: '🏢', color: '#22c55e',
+    subsections: [
+      {
+        name: 'Business Planning',
+        prompts: [
+          { title: 'Business Model Canvas', difficulty: 'medium', tags: ['Strategy','Startup'], prompt: 'Help me fill out a Business Model Canvas for: [business idea]\n\nFor each block, provide detailed and specific answers:\n\n1. Customer Segments: Who are your target customers?\n2. Value Propositions: What unique value do you offer?\n3. Channels: How do you reach customers?\n4. Customer Relationships: What type of relationship?\n5. Revenue Streams: How do you make money?\n6. Key Resources: What do you need to operate?\n7. Key Activities: What must you do well?\n8. Key Partnerships: Who are your essential partners?\n9. Cost Structure: What are your major costs?\n\nAlso identify: Biggest assumption to validate, unfair advantage potential.', shortDescription: 'Complete a Business Model Canvas with customer segments, value propositions, revenue streams, and cost structures.', fullDescription: 'Guides you through filling all nine Business Model Canvas blocks including customer segments with personas, unique value propositions, channel strategies, customer relationship types, revenue streams with pricing models, key resources and activities, essential partnerships, cost structures, plus identification of the biggest assumption to validate and potential unfair advantages.' },
+          { title: 'Competitive Analysis', difficulty: 'medium', tags: ['Analysis','Strategy'], prompt: 'Perform a competitive analysis for [your product/service]:\n\nIndustry: [your industry]\nMy product: [brief description]\nCompetitors: [list 3-5 competitors]\n\nAnalyze each competitor on:\n- Target market\n- Pricing strategy\n- Key features/USPs\n- Marketing channels\n- Strengths and weaknesses\n- Customer reviews sentiment\n\nProvide:\n1. Competitive positioning map\n2. Feature comparison table\n3. Pricing comparison\n4. Market gaps and opportunities\n5. Differentiation strategy recommendations\n6. SWOT analysis for your business', shortDescription: 'Perform multi-competitor analysis with positioning maps, feature comparisons, SWOT, and differentiation strategies.', fullDescription: 'Delivers a thorough competitive analysis of 3-5 competitors including target market assessment, pricing strategy comparison, key features and USPs, marketing channel analysis, strengths and weaknesses, customer review sentiment analysis, competitive positioning maps, feature comparison tables, pricing comparisons, market gap identification, differentiation strategy recommendations, and a complete SWOT analysis.' },
+          { title: 'Pitch Deck Script', difficulty: 'advanced', tags: ['Pitch','Startup'], prompt: 'Write a pitch deck narrative for: [startup/company name]\n\nStartup: [one-line description]\nStage: [idea/seed/Series A]\nAsk: [funding amount or partnership]\n\nWrite speaker notes for each slide:\n1. Title slide (hook statement)\n2. Problem (pain point story)\n3. Solution (your answer)\n4. Market size (TAM/SAM/SOM)\n5. Product (demo walkthrough)\n6. Traction (key metrics)\n7. Business model (how you make money)\n8. Competition (why you win)\n9. Team (why you\'re the ones)\n10. Financials (projections)\n11. The Ask (specific use of funds)\n12. Vision (closing inspiration)', shortDescription: 'Write compelling pitch deck narratives with speaker notes for every slide from problem to vision and the ask.', fullDescription: 'Creates a complete pitch deck narrative with detailed speaker notes for all 12 slides: attention-grabbing title hook, problem storytelling with pain points, solution presentation with demo flow, TAM/SAM/SOM market sizing, product walkthrough, traction metrics, business model explanation, competitive positioning, team credentials, financial projections, specific use of funds, and an inspiring closing vision.' },
+        ]
+      },
+      {
+        name: 'Product Management',
+        prompts: [
+          { title: 'PRD (Product Requirements Document)', difficulty: 'advanced', tags: ['Product','Documentation'], prompt: 'Write a PRD for: [feature name]\n\nProduct: [product name and brief description]\nTarget user: [who benefits]\nProblem: [what problem does this solve]\n\nInclude:\n1. Overview and objectives\n2. User stories (as a [user], I want [goal] so that [benefit])\n3. Functional requirements (prioritized P0/P1/P2)\n4. Non-functional requirements (performance, security)\n5. UI/UX requirements and wireframe descriptions\n6. API changes (if applicable)\n7. Data requirements and tracking events\n8. Success metrics (KPIs)\n9. Dependencies and risks\n10. Rollout plan\n11. Open questions', shortDescription: 'Write comprehensive PRDs with user stories, functional requirements, success metrics, and rollout plans.', fullDescription: 'Creates a complete Product Requirements Document including overview and objectives, prioritized user stories with acceptance criteria, P0/P1/P2 functional requirements, non-functional requirements for performance and security, UI/UX descriptions with wireframe specifications, API change documentation, data requirements and tracking events, success KPIs, dependency and risk analysis, phased rollout plan, and open questions.' },
+          { title: 'User Story Writer', difficulty: 'easy', tags: ['Agile','User Stories'], prompt: 'Write user stories for: [feature or epic]\n\nProduct context: [brief description]\nUser types: [list user roles]\n\nFor each story, use the format:\n"As a [role], I want [action] so that [benefit]"\n\nInclude:\n- Acceptance criteria (Given/When/Then)\n- Priority (Must/Should/Could/Won\'t)\n- Story points estimate\n- Dependencies\n- Edge cases to consider\n\nWrite 8-12 user stories covering the full feature.', shortDescription: 'Write 8-12 user stories with acceptance criteria, priority rankings, story points, and edge cases.', fullDescription: 'Generates a complete set of user stories for any feature or epic using the standard format with role, action, and benefit. Each story includes Given/When/Then acceptance criteria, Must/Should/Could/Wont priority using MoSCoW, story point estimates, dependency mapping, and edge case considerations. Produces 8-12 stories covering the full feature scope from happy path to error states.' },
+        ]
+      },
+      {
+        name: 'Finance & Analysis',
+        prompts: [
+          { title: 'Financial Projection Model', difficulty: 'advanced', tags: ['Finance','Modeling'], prompt: 'Help me build a financial projection for: [business/product]\n\nBusiness model: [subscription/transactional/marketplace/etc]\nCurrent stage: [pre-revenue/growing/scaling]\nKnown metrics: [current MRR, users, costs if any]\n\nCreate projections for:\n1. Revenue model (break down revenue streams)\n2. Cost structure (fixed vs variable)\n3. Monthly projections for 12-24 months\n4. Key assumptions and sensitivity analysis\n5. Break-even analysis\n6. Unit economics (CAC, LTV, payback period)\n7. Key metrics to track\n8. Scenario analysis (best/base/worst case)\n\nPresent in a clear table format with formulas.', shortDescription: 'Build detailed financial projections with revenue models, cost structures, break-even analysis, and scenario planning.', fullDescription: 'Creates comprehensive financial projections including multi-stream revenue models, fixed and variable cost breakdowns, 12-24 month monthly projections with formulas, key assumptions documentation with sensitivity analysis, break-even calculations, unit economics (CAC, LTV, payback period), key metrics to track with targets, and best/base/worst case scenario analysis in clear table formats.' },
+          { title: 'KPI Dashboard Design', difficulty: 'medium', tags: ['Analytics','KPIs'], prompt: 'Design a KPI dashboard for [business type]:\n\nBusiness: [describe]\nStage: [startup/growth/mature]\nTeam: [who will use this dashboard]\nGoals: [current top priorities]\n\nProvide:\n1. North Star Metric recommendation\n2. Category KPIs:\n   - Revenue & Growth\n   - Customer Acquisition\n   - Engagement & Retention\n   - Operational Efficiency\n   - Team Performance\n3. Each KPI with:\n   - Definition and formula\n   - Target and benchmark\n   - Data source\n   - Update frequency\n4. Dashboard layout recommendation\n5. Alert thresholds for critical metrics', shortDescription: 'Design KPI dashboards with north star metrics, category KPIs, formulas, targets, and alert thresholds.', fullDescription: 'Designs complete business dashboards including a north star metric recommendation, categorized KPIs across revenue and growth, customer acquisition, engagement and retention, operational efficiency, and team performance. Each KPI includes definition with formula, target with benchmark, data source, and update frequency. Includes dashboard layout recommendations and alert thresholds for critical metrics.' },
+        ]
+      },
+      {
+        name: 'Fundraising & Investor Relations',
+        prompts: [
+          { title: 'Investor Update Email', difficulty: 'medium', tags: ['Fundraising','Investor'], prompt: 'Write a monthly investor update email for [company name].\n\nCurrent stage: [seed/Series A/B/C]\nMonthly metrics:\n- Revenue: $[amount]\n- Growth rate: [%]\n- Burn rate: $[amount]\n- Runway: [months]\n- Key milestones hit: [list]\nChallenges: [describe]\nAsk (if any): [introduction/hiring/advice/follow-on]\n\nStructure:\n1. Subject line (clear, informative)\n2. Opening paragraph (highlight of the month, 2 sentences)\n3. Key metrics table (revenue, growth, users, retention, burn, runway)\n4. Product progress (what shipped, what\'s coming)\n5. Team updates (hires, departures, culture)\n6. Challenges and how you\'re addressing them\n7. Specific asks (introductions, advice, partnerships)\n8. Upcoming milestones\n9. Closing and calendar link\n\nTone: transparent but confident. No surprises. Bad news early.', shortDescription: 'Write transparent investor update emails with key metrics, product progress, challenges, and specific asks.', fullDescription: 'Creates a professional investor update email following best practices for founder-investor communication. Includes a clear subject line, monthly highlight, key metrics table with revenue, growth, users, retention, burn rate, and runway, product progress updates, team changes, transparent challenge reporting with mitigation plans, specific asks with introductions or advice requests, upcoming milestones, and a scheduling link for follow-up calls. Bad news presented early and constructively.' },
+          { title: 'Fundraising Strategy Memo', difficulty: 'advanced', tags: ['Fundraising','Strategy'], prompt: 'Create a fundraising strategy memo for [company name].\n\nCompany:\n- One-line pitch: [describe]\n- Stage: [pre-seed/seed/Series A/B]\n- Industry: [sector]\n- Current metrics: [revenue, users, growth]\n- Previous funding: $[amount] from [investors]\n\nTarget: $[amount] at $[valuation] valuation\nTimeline: [months to close]\n\nProvide:\n1. Fundraising narrative (the story, 3 paragraphs)\n2. Target investor list with rationale (20 investors, 3 tiers)\n3. Investor outreach sequence (introduction → meeting → follow-up)\n4. Due diligence preparation checklist\n5. Data room content list and organization\n6. Common objections and prepared responses\n7. Term sheet negotiation priorities (must-have vs nice-to-have)\n8. Timeline and milestone plan\n9. Alternative scenarios (if raise falls short)\n10. Post-raise allocation plan (use of funds)', shortDescription: 'Build a full fundraising strategy with investor targeting, outreach sequences, due diligence prep, and term sheet priorities.', fullDescription: 'Creates a comprehensive fundraising memo including a compelling three-paragraph narrative, a tiered target investor list of 20 firms with rationale for each, a structured investor outreach sequence from introduction through due diligence to close, a complete data room content checklist, prepared responses to the five most common investor objections, prioritized term sheet negotiation points, a fundraising timeline with weekly milestones, contingency plans for shortfalls, and a detailed use of funds plan for post-raise execution.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'design', name: 'Design & UX', icon: '🎨', color: '#8b5cf6',
+    subsections: [
+      {
+        name: 'UI/UX Design',
+        prompts: [
+          { title: 'UI Design Brief', difficulty: 'medium', tags: ['UI','Design System'], prompt: 'Create a UI design brief for: [screen/feature]\n\nProduct: [app/website name]\nPlatform: [web/iOS/Android]\nTarget users: [describe]\nCurrent issues: [what\'s wrong now]\n\nProvide:\n1. Layout recommendation with component hierarchy\n2. Color palette (primary, secondary, accent, semantic)\n3. Typography scale and font recommendations\n4. Spacing and grid system\n5. Component specifications\n6. Responsive breakpoints behavior\n7. Accessibility considerations (WCAG 2.1 AA)\n8. Dark mode adaptations\n9. Micro-interaction suggestions\n10. Design tokens format', shortDescription: 'Create UI design briefs with layout recommendations, color palettes, typography, components, and accessibility specs.', fullDescription: 'Generates comprehensive UI design briefs for any screen or feature including layout recommendations with component hierarchy, complete color palettes with primary and semantic colors, typography scales with font recommendations, spacing and grid systems, detailed component specifications, responsive breakpoint behaviors, WCAG 2.1 AA accessibility considerations, dark mode adaptations, micro-interaction suggestions, and design token formats.' },
+          { title: 'UX Audit', difficulty: 'medium', tags: ['UX','Audit'], prompt: 'Perform a UX audit for [website/app]:\n\nURL/Product: [link or description]\nTarget user: [who uses this]\nMain user goal: [primary task]\nKnown issues: [complaints or problems]\n\nEvaluate:\n1. First impressions (5-second test)\n2. Navigation and information architecture\n3. Search and findability\n4. Form design and input UX\n5. Error handling and recovery\n6. Loading states and feedback\n7. Mobile experience\n8. Accessibility (screen reader, keyboard nav)\n9. Trust signals and credibility\n10. Conversion funnel friction points\n\nFor each issue, rate severity (1-5) and provide a fix recommendation with before/after description.', shortDescription: 'Conduct thorough UX audits evaluating navigation, forms, error handling, mobile experience, and accessibility.', fullDescription: 'Performs a complete UX audit across ten dimensions: first impressions with 5-second testing, navigation and information architecture, search and findability, form design and input UX, error handling and recovery flows, loading states and feedback, mobile experience, screen reader and keyboard accessibility, trust signals and credibility, and conversion funnel friction points. Each issue includes severity ratings and before/after fix recommendations.' },
+        ]
+      },
+      {
+        name: 'Branding',
+        prompts: [
+          { title: 'Brand Voice Guide', difficulty: 'medium', tags: ['Branding','Voice'], prompt: 'Create a brand voice guide for: [company/brand]\n\nIndustry: [sector]\nTarget audience: [describe]\nBrand values: [list if known]\nCompetitors: [list for differentiation]\n\nDefine:\n1. Brand personality (3-4 adjectives)\n2. Voice spectrum (where you fall on scales like formal↔casual)\n3. Writing principles (do\'s and don\'ts)\n4. Tone variations by context:\n   - Social media\n   - Email\n   - Error messages\n   - Customer support\n   - Marketing copy\n5. Vocabulary preferences (words to use vs avoid)\n6. Example rewrites (before/after) for 5 scenarios\n7. Grammar and style rules', shortDescription: 'Define brand voice with personality adjectives, tone variations by context, vocabulary preferences, and style rules.', fullDescription: 'Creates a complete brand voice guide including 3-4 personality adjectives with rationale, voice spectrum positioning on scales like formal to casual, writing principles with dos and don\'ts, tone variations for social media, email, error messages, customer support, and marketing copy, vocabulary preferences with words to use and avoid, five before/after example rewrites, and grammar and style rules for consistency.' },
+          { title: 'Brand Naming Brainstorm', difficulty: 'easy', tags: ['Branding','Naming'], prompt: 'Brainstorm brand names for: [product/service description]\n\nIndustry: [sector]\nTarget audience: [describe]\nBrand personality: [playful/professional/luxury/tech/etc]\nValues: [what the brand stands for]\n\nProvide:\n1. 20 name ideas across categories:\n   - Descriptive names\n   - Evocative names\n   - Coined/invented names\n   - Acronym-based\n   - Metaphorical\n2. For each name:\n   - Meaning/rationale\n   - Domain availability consideration\n   - Trademark risk assessment\n   - Social media handle availability notes\n3. Top 5 recommendations with rationale\n4. Naming process next steps', shortDescription: 'Brainstorm 20 brand names across descriptive, evocative, coined, acronym, and metaphorical categories with rationale.', fullDescription: 'Generates 20 brand name ideas across five categories: descriptive names, evocative names, coined or invented names, acronym-based names, and metaphorical names. Each name includes meaning and rationale, domain availability considerations, trademark risk assessment, and social media handle availability. Includes top 5 recommendations with detailed rationale and a naming process next steps guide.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'learning', name: 'Learning & Education', icon: '📚', color: '#06b6d4',
+    subsections: [
+      {
+        name: 'Study & Learning',
+        prompts: [
+          { title: 'Concept Explainer (ELI5 → Expert)', difficulty: 'easy', tags: ['Learning','Education'], prompt: 'Explain [concept/topic] at four levels of complexity:\n\n1. **5-year-old**: Simple analogy, no jargon\n2. **High school student**: Basic principles, relatable examples\n3. **College student**: Technical accuracy, connections to related concepts\n4. **Expert**: Nuances, edge cases, current debates in the field\n\nFor each level:\n- Use a different analogy or example\n- Build on the previous level\n- Include one "aha moment" insight\n\nEnd with: Key takeaways (3 bullet points) and further reading suggestions.', shortDescription: 'Explain complex concepts at four levels from 5-year-old to expert with analogies, examples, and key takeaways.', fullDescription: 'Breaks down any concept into four progressive levels of complexity: a simple analogy for a 5-year-old, basic principles with relatable examples for a high school student, technical accuracy with connections for a college student, and nuanced edge cases with current debates for an expert. Each level builds on the previous with unique analogies, an aha-moment insight, and concludes with three key bullet points and further reading suggestions.' },
+          { title: 'Study Plan Creator', difficulty: 'medium', tags: ['Study','Planning'], prompt: 'Create a study plan for learning: [topic/skill]\n\nCurrent level: [beginner/intermediate/advanced]\nGoal: [specific objective]\nAvailable time: [hours per week]\nDeadline: [target date]\nLearning style: [visual/reading/hands-on/mixed]\n\nProvide:\n1. Week-by-week curriculum\n2. Resources for each topic (free + paid options)\n3. Practice exercises and projects\n4. Milestones and self-assessment checkpoints\n5. Spaced repetition schedule for key concepts\n6. Common pitfalls to avoid\n7. Community resources (forums, Discord, etc.)\n8. Daily/weekly routine template', shortDescription: 'Design customized study plans with weekly curricula, resources, practice exercises, and spaced repetition schedules.', fullDescription: 'Creates a personalized study plan including week-by-week curriculum tailored to your current level and goal, curated free and paid resources for each topic, hands-on practice exercises and projects, milestone checkpoints for self-assessment, spaced repetition schedules for key concepts, common pitfalls to avoid, community resource recommendations, and a daily and weekly routine template for consistent progress.' },
+          { title: 'Flashcard Generator', difficulty: 'easy', tags: ['Study','Memory'], prompt: 'Create flashcards for the topic: [topic]\n\nLevel: [beginner/intermediate/advanced]\nNumber of cards: [10/20/30]\nFormat: [question-answer / cloze deletion / concept mapping]\n\nFor each card:\n- Front: Clear, specific question or prompt\n- Back: Concise, accurate answer\n- Mnemonic or memory aid (if applicable)\n- Related concept hint\n\nAlso provide:\n- Suggested study order (easy → hard)\n- Grouping by subtopic\n- Recommended review intervals', shortDescription: 'Generate flashcards with clear questions, concise answers, mnemonics, and spaced repetition study ordering.', fullDescription: 'Produces customized flashcards for any topic with clear front-side questions and concise back-side answers, including mnemonics and memory aids, related concept hints for contextual learning, difficulty-based study ordering from easy to hard, subtopic grouping for focused review sessions, and recommended review intervals aligned with spaced repetition principles for long-term retention.' },
+        ]
+      },
+      {
+        name: 'Teaching & Course Creation',
+        prompts: [
+          { title: 'Course Outline Builder', difficulty: 'medium', tags: ['Course','Teaching'], prompt: 'Design a comprehensive course on: [topic]\n\nTarget audience: [who this is for]\nDuration: [weeks/hours]\nFormat: [online/in-person/hybrid]\nSkill level: [beginner to what level]\n\nProvide:\n1. Course title and subtitle\n2. Learning objectives (measurable)\n3. Module breakdown with topics\n4. For each module:\n   - Lessons with time estimates\n   - Key concepts\n   - Hands-on activities\n   - Assessment methods\n5. Prerequisites\n6. Required tools/resources\n7. Grading/evaluation criteria\n8. Certificate of completion criteria\n9. Marketing angles for selling the course', shortDescription: 'Design comprehensive course outlines with learning objectives, module breakdowns, assessments, and marketing angles.', fullDescription: 'Develops a complete course structure including a compelling title and subtitle, measurable learning objectives, detailed module breakdowns with time estimates, lesson-level topics with key concepts, hands-on activities and assessment methods per module, prerequisites and required tools, grading and evaluation criteria, certificate completion requirements, and marketing angles for selling the course effectively.' },
+          { title: 'Quiz & Assessment Creator', difficulty: 'easy', tags: ['Assessment','Quiz'], prompt: 'Create an assessment for: [topic/module]\n\nLearning objectives covered: [list]\nAudience: [students/employees/etc]\nAssessment type: [formative/summative]\nDuration: [time allowed]\n\nGenerate:\n1. 10 Multiple choice questions (with 4 options each)\n   - 3 recall-level\n   - 4 comprehension-level\n   - 2 application-level\n   - 1 analysis-level\n2. 3 Short answer questions\n3. 1 Essay/discussion question\n4. Answer key with explanations\n5. Grading rubric\n6. Difficulty distribution notes', shortDescription: 'Create balanced assessments with multiple choice, short answer, and essay questions across Bloom\'s taxonomy levels.', fullDescription: 'Generates a complete assessment including 10 multiple choice questions across four cognitive levels (recall, comprehension, application, analysis), 3 short answer questions, 1 essay or discussion question, a detailed answer key with explanations, a grading rubric with criteria and point allocation, and difficulty distribution notes ensuring balanced coverage of learning objectives at appropriate challenge levels.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'data', name: 'Data & Analytics', icon: '📊', color: '#ef4444',
+    subsections: [
+      {
+        name: 'Data Analysis',
+        prompts: [
+          { title: 'SQL Query Builder', difficulty: 'medium', tags: ['SQL','Data'], prompt: 'Write a SQL query to: [describe what you want to find]\n\nTable schema:\n- Table1: [columns and types]\n- Table2: [columns and types]\n- Relationships: [foreign keys]\n\nRequirements:\n- [Specific filters]\n- [Aggregations needed]\n- [Sorting/grouping]\n- [Date range if applicable]\n\nProvide:\n1. The optimized query\n2. Explanation of each clause\n3. Index recommendations for performance\n4. Alternative approaches if applicable\n5. Sample output format', shortDescription: 'Write optimized SQL queries with explanations, index recommendations, and alternative approaches.', fullDescription: 'Generates production-quality SQL queries for any data retrieval need including optimized SELECT statements with proper JOINs, WHERE filters, GROUP BY aggregations, and ORDER BY sorting. Provides clause-by-clause explanations, index recommendations for query performance, alternative query approaches for the same result set, and sample output formatting for result validation.' },
+          { title: 'Data Visualization Advisor', difficulty: 'medium', tags: ['Visualization','Charts'], prompt: 'Recommend the best way to visualize this data:\n\nData description: [what data do you have]\nVariables: [list columns/fields]\nData types: [categorical/numerical/temporal]\nAudience: [technical/non-technical executives]\nPurpose: [compare/trend/compose/distribute]\nMedium: [presentation/report/dashboard]\n\nProvide:\n1. Primary chart type recommendation with rationale\n2. 2-3 alternative visualizations\n3. Color scheme suggestion\n4. Labels, annotations, and legends guidance\n5. Common mistakes to avoid\n6. Interactive features to consider (if digital)\n7. Accessibility considerations\n8. Tools to create it (free + professional)', shortDescription: 'Recommend optimal chart types, color schemes, annotations, and tools for any dataset and audience.', fullDescription: 'Provides expert visualization recommendations including primary chart type selection with rationale based on data type and purpose, 2-3 alternative visualization options, accessible color scheme suggestions, labeling and annotation guidance, common visualization mistakes to avoid, interactive feature recommendations for digital mediums, accessibility considerations for color-blind users, and tool recommendations from free to professional.' },
+          { title: 'Python Data Analysis', difficulty: 'medium', tags: ['Python','Pandas'], prompt: 'Write Python code to analyze: [describe dataset and goals]\n\nDataset:\n- Source: [CSV/API/database]\n- Rows/columns: [approximate size]\n- Key columns: [names and types]\n- Known issues: [missing values, duplicates, etc.]\n\nAnalysis goals:\n1. [Specific analysis question]\n2. [Another question]\n3. [Another question]\n\nProvide:\n- Data loading and cleaning code\n- Exploratory data analysis\n- Statistical summaries\n- Visualizations (matplotlib/seaborn/plotly)\n- Key findings template\n- Code with comments and type hints', shortDescription: 'Write complete Python data analysis code with loading, cleaning, EDA, visualizations, and key findings.', fullDescription: 'Creates end-to-end Python analysis scripts including data loading from CSV, API, or database sources, comprehensive data cleaning handling missing values and duplicates, exploratory data analysis with statistical summaries, publication-quality visualizations using matplotlib, seaborn, or plotly, statistical analysis with appropriate tests, and a key findings template. Includes type hints and explanatory comments throughout.' },
+        ]
+      },
+      {
+        name: 'Machine Learning',
+        prompts: [
+          { title: 'ML Problem Framing', difficulty: 'advanced', tags: ['ML','Strategy'], prompt: 'Help me frame this as a machine learning problem:\n\nBusiness problem: [describe in plain English]\nAvailable data: [describe dataset]\nConstraints: [latency, budget, team expertise]\nSuccess criteria: [business metric]\n\nProvide:\n1. ML problem formulation:\n   - Input/output definition\n   - Task type (classification/regression/etc)\n   - Target variable\n2. Feature engineering ideas\n3. Baseline model recommendation\n4. Evaluation metrics (ML + business)\n5. Data requirements and gaps\n6. Simplest model that could work\n7. When ML is NOT the right approach\n8. Deployment considerations', shortDescription: 'Frame business problems as machine learning tasks with input/output definitions, feature ideas, and baseline models.', fullDescription: 'Helps transform business problems into well-defined ML problems including input and output variable definitions, task type classification (regression, classification, clustering, etc.), target variable selection, feature engineering ideas based on available data, baseline model recommendations, appropriate evaluation metrics bridging ML and business goals, data requirements and gap analysis, and guidance on when ML is not the right approach.' },
+          { title: 'Model Evaluation Framework', difficulty: 'advanced', tags: ['ML','Evaluation'], prompt: 'Design an evaluation framework for a [type] model:\n\nModel purpose: [what it predicts]\nData characteristics: [size, imbalance, features]\nBusiness constraints: [false positive/negative costs]\n\nProvide:\n1. Primary evaluation metrics with formulas\n2. Secondary metrics for diagnostics\n3. Baseline comparison strategy\n4. Cross-validation approach\n5. Statistical significance testing\n6. Fairness and bias evaluation\n7. A/B testing design\n8. Monitoring and drift detection plan\n9. Evaluation report template\n10. Decision criteria for model deployment', shortDescription: 'Design evaluation frameworks with metrics, cross-validation, statistical testing, fairness checks, and deployment criteria.', fullDescription: 'Creates a comprehensive model evaluation framework including primary and secondary evaluation metrics with formulas, baseline comparison strategies, appropriate cross-validation approaches, statistical significance testing for comparing models, fairness and bias evaluation across demographic groups, A/B testing design for production validation, monitoring and drift detection plans, an evaluation report template, and decision criteria for model deployment go or no-go decisions.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'productivity', name: 'Productivity & Tools', icon: '⚡', color: '#f97316',
+    subsections: [
+      {
+        name: 'Automation',
+        prompts: [
+          { title: 'Zapier/Make Automation', difficulty: 'easy', tags: ['Automation','No-code'], prompt: 'Design an automation workflow for: [task to automate]\n\nCurrent manual process:\n[Describe step-by-step what you do now]\n\nTools involved: [list apps/software]\nFrequency: [how often this happens]\nTrigger: [what starts this process]\n\nProvide:\n1. Workflow diagram (text-based)\n2. Step-by-step setup instructions\n3. Trigger configuration\n4. Actions in order with conditions\n5. Error handling recommendations\n6. Testing checklist\n7. Monitoring and alerting setup\n8. Estimated time saved per week', shortDescription: 'Design no-code automation workflows with trigger configurations, sequential actions, error handling, and testing checklists.', fullDescription: 'Creates complete automation workflows for Zapier or Make including text-based workflow diagrams, step-by-step setup instructions, trigger configuration with filters, ordered actions with conditional branching logic, error handling recommendations with fallback paths, thorough testing checklists, monitoring and alerting setup for failure detection, and estimated weekly time savings calculations.' },
+          { title: 'Shell Script Generator', difficulty: 'medium', tags: ['Shell','Automation'], prompt: 'Write a bash/zsh script to: [describe task]\n\nCurrent manual steps:\n[List what you do manually]\n\nRequirements:\n- OS: [macOS/Linux]\n- Should handle errors gracefully\n- Include logging\n- Make it configurable via arguments\n- Add help/usage text\n\nProvide:\n- Complete script with shebang\n- Comments explaining each section\n- Input validation\n- Error handling with meaningful messages\n- Usage examples\n- Installation instructions (if dependencies needed)', shortDescription: 'Write robust bash or zsh scripts with argument parsing, error handling, logging, and usage documentation.', fullDescription: 'Generates production-quality shell scripts for any task including proper shebang lines, comprehensive input validation and argument parsing, structured error handling with meaningful error messages, logging with timestamped output, help and usage text, installation instructions for dependencies, and usage examples. Designed for cross-platform compatibility between macOS and Linux with graceful fallbacks.' },
+        ]
+      },
+      {
+        name: 'Workflow Optimization',
+        prompts: [
+          { title: 'Daily Workflow Audit', difficulty: 'easy', tags: ['Productivity','Workflow'], prompt: 'Help me optimize my daily workflow:\n\nMy role: [job title]\nTypical day:\n[List your daily tasks and activities]\nTools I use: [list software/apps]\nPain points: [what frustrates you]\nGoals: [what you want to achieve]\n\nAnalyze and provide:\n1. Time audit (where time actually goes)\n2. Tasks to eliminate, delegate, or automate\n3. Batch processing opportunities\n4. Focus time vs meeting time balance\n5. Tool consolidation suggestions\n6. Morning/evening routine optimization\n7. Weekly review template\n8. Specific productivity techniques for your situation\n9. Quick wins (changes that save 30+ min/day)', shortDescription: 'Analyze daily workflows to identify automation opportunities, batch processing, and quick productivity wins.', fullDescription: 'Provides a complete workflow optimization analysis including time audit tracking where time actually goes, tasks categorized for elimination, delegation, or automation, batching opportunities for similar tasks, focus time versus meeting time balance assessment, tool consolidation recommendations, morning and evening routine optimization, a weekly review template, specific productivity techniques matched to your role, and quick wins saving 30 or more minutes per day.' },
+          { title: 'Notion/Obsidian Setup', difficulty: 'medium', tags: ['Note-taking','Tools'], prompt: 'Design a [Notion/Obsidian] workspace for: [use case]\n\nUse case: [project management/knowledge base/CRM/etc]\nData types: [documents, tasks, contacts, etc]\nTeam size: [solo/small team/large team]\nIntegrations: [what other tools you use]\n\nProvide:\n1. Page/database structure\n2. Properties and fields for each database\n3. Views (table, board, calendar, gallery)\n4. Templates for recurring items\n5. Relations and rollups\n6. Automation suggestions\n7. Dashboard/home page layout\n8. Naming conventions\n9. Migration plan from current setup', shortDescription: 'Design organized Notion or Obsidian workspaces with database structures, templates, views, and automation rules.', fullDescription: 'Creates a complete workspace design for Notion or Obsidian including page and database structure with appropriate property types, custom views (table, board, calendar, gallery) for different workflows, templates for recurring items, relation and rollup configurations for connected data, automation suggestions for repetitive tasks, dashboard or home page layout, naming conventions, and a migration plan from your current setup.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'personal', name: 'Personal Development', icon: '🌱', color: '#10b981',
+    subsections: [
+      {
+        name: 'Career & Growth',
+        prompts: [
+          { title: 'Resume Bullet Points', difficulty: 'easy', tags: ['Resume','Career'], prompt: 'Transform these job duties into achievement-based resume bullet points:\n\nJob title: [your title]\nCompany: [company name]\nDuties you performed:\n[List 5-8 things you did]\n\nFor each, rewrite using the formula:\n[Action verb] + [what you did] + [result/impact with numbers]\n\nAlso provide:\n- 3 quantified achievements to highlight\n- Skills to emphasize for [target role]\n- ATS keywords to include\n- Before/after comparison', shortDescription: 'Transform job duties into achievement-based resume bullets using action verbs and quantified results.', fullDescription: 'Converts your job responsibilities into compelling achievement-based resume bullets using the formula: action verb plus specific accomplishment plus quantified result. Includes three highlighted achievements with the strongest metrics, skills to emphasize for your target role, ATS keywords for applicant tracking system optimization, and before-and-after comparisons showing the transformation from duty-based to impact-based descriptions.' },
+          { title: 'Interview Prep', difficulty: 'medium', tags: ['Interview','Career'], prompt: 'Help me prepare for an interview:\n\nRole: [job title]\nCompany: [company name]\nInterview type: [behavioral/technical/panel]\nMy background: [brief experience]\n\nProvide:\n1. 10 likely questions with STAR-method answers\n2. Questions to ask the interviewer (10)\n3. Company research checklist\n4. Technical topics to review (if applicable)\n5. Common mistakes for this role\n6. Salary negotiation talking points\n7. Follow-up email template\n8. Day-of checklist\n9. Red flags to watch for', shortDescription: 'Prepare for interviews with STAR-method answers, company research checklists, and salary negotiation talking points.', fullDescription: 'Provides complete interview preparation including 10 likely questions with STAR-method (Situation, Task, Action, Result) answer frameworks, thoughtful questions to ask the interviewer, company research checklist, technical topics to review based on the role, common mistakes specific to the position, salary negotiation talking points with market data, follow-up email template, day-of checklist, and red flags to watch for during the process.' },
+          { title: 'LinkedIn Profile Optimizer', difficulty: 'medium', tags: ['LinkedIn','Personal Brand'], prompt: 'Optimize my LinkedIn profile:\n\nCurrent role: [job title]\nIndustry: [sector]\nCareer goal: [what you want LinkedIn to do for you]\nTarget audience: [who should find you]\n\nProvide optimized versions of:\n1. Headline (220 chars, keyword-rich)\n2. About section (story format, 3 paragraphs)\n3. Experience bullets (achievement-based)\n4. Skills to list and endorse\n5. Featured section recommendations\n6. Content strategy (what to post)\n7. Engagement strategy (who to connect with)\n8. Profile completeness checklist\n9. SEO optimization tips for LinkedIn search', shortDescription: 'Optimize LinkedIn profiles with keyword-rich headlines, story-based about sections, and achievement-driven experience bullets.', fullDescription: 'Optimizes every section of your LinkedIn profile including a 220-character headline packed with relevant keywords, a three-paragraph About section in story format, achievement-based experience bullets with metrics, strategically selected skills for endorsements, featured section content recommendations, content strategy for organic visibility, engagement strategy for network growth, profile completeness checklist, and SEO tips for LinkedIn\'s internal search algorithm.' },
+          { title: 'Personal Brand Statement', difficulty: 'easy', tags: ['Personal Brand','Career'], prompt: 'Help me craft a powerful personal brand statement.\n\nMy role: [current or target job title]\nIndustry: [sector]\nTarget audience: [who should know about me]\nMy unique value: [what makes me different from peers]\nKey achievements: [list 2-3 notable results]\nPersonality traits: [3-4 adjectives that describe me professionally]\nCareer goal: [what I want to be known for]\n\nProvide:\n1. One-line tagline (under 10 words, memorable)\n2. Elevator pitch (30 seconds, 60-80 words)\n3. LinkedIn headline (220 chars, keyword-optimized)\n4. Twitter/X bio (160 chars)\n5. Instagram/TikTok bio (150 chars)\n6. Professional bio (100 words for speaker intros)\n7. Extended bio (300 words for website, about pages)\n8. 5 content topics I should post about to reinforce this brand\n\nEach version should be consistent in messaging but tailored to the platform\'s format and audience expectations.', shortDescription: 'Craft a complete personal brand statement suite from taglines to bios, optimized for every platform.', fullDescription: 'Creates a cohesive personal brand statement system with eight derivatives: a memorable one-line tagline under 10 words, a 30-second elevator pitch at 60-80 words, a keyword-optimized LinkedIn headline at 220 characters, platform-specific bios for Twitter, Instagram, and TikTok, a short professional bio for speaker intros, an extended bio for websites and about pages, and five recommended content topics to reinforce the brand. All versions maintain consistent messaging while adapting to each platform format.' },
+        ]
+      },
+      {
+        name: 'Communication',
+        prompts: [
+          { title: 'Difficult Conversation Script', difficulty: 'medium', tags: ['Communication','Soft Skills'], prompt: 'Help me prepare for a difficult conversation:\n\nSituation: [describe the context]\nPerson: [your relationship to them]\nGoal: [what you want to achieve]\nTheir likely perspective: [how they might feel]\nYour concerns: [what makes this hard]\n\nProvide:\n1. Opening statement (non-confrontational)\n2. Key talking points using "I" statements\n3. Active listening prompts\n4. Responses to likely pushback\n5. De-escalation techniques\n6. Compromise options\n7. Desired outcomes and walk-away points\n8. Follow-up plan\n9. Practice script you can rehearse', shortDescription: 'Prepare for difficult conversations with opening statements, I-statements, de-escalation techniques, and follow-up plans.', fullDescription: 'Creates a complete preparation framework for difficult conversations including a non-confrontational opening statement, key talking points using I-statements to express feelings without blame, active listening prompts, responses to likely pushback scenarios, de-escalation techniques for tension reduction, compromise options, desired outcomes with walk-away points, a follow-up plan, and a practice script for rehearsal before the actual conversation.' },
+          { title: 'Presentation Script', difficulty: 'medium', tags: ['Presentation','Public Speaking'], prompt: 'Write a presentation script for:\n\nTopic: [what you\'re presenting]\nAudience: [who and how many]\nDuration: [minutes]\nSetting: [conference/meeting/pitch]\nGoal: [what should audience do after]\n\nStructure:\n1. Opening hook (story, stat, or question)\n2. Problem/context\n3. Main points (3-5 key messages)\n4. Evidence and examples for each\n5. Transitions between sections\n6. Interactive elements (questions, polls)\n7. Summary and key takeaways\n8. Strong closing with CTA\n\nInclude:\n- Speaker notes with timing\n- Slide suggestions\n- Audience engagement moments\n- Pause points for emphasis', shortDescription: 'Write presentation scripts with opening hooks, structured main points, audience engagement, and strong closings.', fullDescription: 'Generates a complete presentation script including an attention-grabbing opening hook using stories, statistics, or questions, clear problem and context setting, 3-5 main points with supporting evidence and examples, smooth transitions between sections, interactive audience engagement elements like questions or polls, a concise summary with key takeaways, and a powerful closing with a specific call to action. Includes speaker notes with timing and slide suggestions.' },
+        ]
+      },
+      {
+        name: 'Health & Wellness',
+        prompts: [
+          { title: 'Workout Plan', difficulty: 'easy', tags: ['Fitness','Health'], prompt: 'Create a weekly workout plan:\n\nGoal: [weight loss/muscle gain/endurance/flexibility]\nExperience: [beginner/intermediate/advanced]\nAvailable equipment: [gym/home/bodyweight]\nTime per session: [minutes]\nDays per week: [number]\nLimitations: [injuries or restrictions]\n\nProvide:\n1. Weekly schedule with muscle groups\n2. Specific exercises with sets x reps\n3. Warm-up and cool-down routines\n4. Progressive overload plan\n5. Rest day recommendations\n6. Nutrition guidelines (general)\n7. Tracking metrics\n8. 4-week progression plan', shortDescription: 'Create personalized weekly workout plans with exercises, sets, reps, progressive overload, and nutrition guidelines.', fullDescription: 'Designs a complete weekly workout plan tailored to your goal of weight loss, muscle gain, endurance, or flexibility. Includes a weekly schedule with muscle group splits, specific exercises with sets and rep ranges, warm-up and cool-down routines, progressive overload plan for continuous improvement, rest day recommendations, general nutrition guidelines, tracking metrics for progress monitoring, and a 4-week progression plan for sustainable results.' },
+          { title: 'Habit Tracker Design', difficulty: 'easy', tags: ['Habits','Self-improvement'], prompt: 'Design a habit tracking system for: [goal]\n\nMy goal: [what you want to achieve]\nCurrent habits: [what you already do]\nBiggest obstacles: [what gets in the way]\nMotivation level: [scale 1-10]\n\nProvide:\n1. Keystone habit recommendation\n2. 5 supporting habits to build\n3. Habit stacking suggestions\n4. Implementation intentions (if X, then Y)\n5. Tracking method (app, journal, spreadsheet)\n6. Reward system design\n7. Recovery plan for missed days\n8. 30-day habit building calendar\n9. Milestones and celebration points', shortDescription: 'Design personal habit tracking systems with keystone habits, habit stacking, reward systems, and 30-day calendars.', fullDescription: 'Builds a complete habit tracking system including a keystone habit recommendation that triggers positive chain reactions, five supporting habits to build, habit stacking suggestions linking new habits to existing routines, implementation intentions using if-then planning, tracking method recommendations for apps, journals, or spreadsheets, a reward system design, recovery plans for missed days, a 30-day habit building calendar, and milestone celebration points for motivation.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'creative', name: 'Creative & Media', icon: '🎬', color: '#a855f7',
+    subsections: [
+      {
+        name: 'Video & Podcast',
+        prompts: [
+          { title: 'YouTube Video Script', difficulty: 'medium', tags: ['YouTube','Video'], prompt: 'Write a YouTube video script:\n\nTopic: [video subject]\nChannel niche: [your niche]\nTarget length: [minutes]\nStyle: [educational/entertainment/vlog]\nTarget audience: [who watches]\n\nStructure:\n1. Hook (first 5 seconds - pattern interrupt)\n2. Intro (promise of value, 15 seconds)\n3. Content sections with timestamps\n4. B-roll and visual cue suggestions\n5. Engagement moments (subscribe, comment prompts)\n6. Key takeaways\n7. Strong CTA and end screen strategy\n\nInclude:\n- SEO-optimized title (3 options)\n- Description with timestamps\n- 30 tags/keywords\n- Thumbnail text ideas (3 options)\n- Comments to pin', shortDescription: 'Write YouTube scripts with pattern-interrupt hooks, timestamped sections, visual cues, and SEO-optimized metadata.', fullDescription: 'Creates a complete YouTube video script including a 5-second pattern-interrupt hook, 15-second value promise intro, timestamped content sections with B-roll and visual cue suggestions, engagement moments with subscribe and comment prompts, key takeaways summary, and a strong CTA with end screen strategy. Includes three SEO-optimized title options, description with timestamps, 30 tags or keywords, thumbnail text ideas, and pinned comment suggestions.' },
+          { title: 'Podcast Episode Outline', difficulty: 'easy', tags: ['Podcast','Audio'], prompt: 'Create a podcast episode outline:\n\nEpisode topic: [subject]\nFormat: [solo/interview/co-hosted]\nTarget length: [minutes]\nShow theme: [your podcast\'s focus]\n\nProvide:\n1. Episode title (SEO-friendly)\n2. Cold open teaser (30 seconds)\n3. Intro music/voiceover script\n4. Main segments with timing\n5. Key questions (if interview)\n6. Talking points and stories to share\n7. Ad read placement and scripts\n8. Listener engagement prompts\n9. Episode outro and next episode teaser\n10. Show notes for podcast platforms\n11. Social media promotion snippets', shortDescription: 'Structure podcast episodes with cold opens, timed segments, interview questions, ad placements, and promotion snippets.', fullDescription: 'Generates a complete podcast episode outline including an SEO-friendly episode title, 30-second cold open teaser, intro voiceover script, timed main segments, key interview questions for guest episodes, talking points and stories, ad read placement and scripts, listener engagement prompts, episode outro with next episode teaser, show notes optimized for podcast platforms, and social media promotion snippets for episode marketing.' },
+        ]
+      },
+      {
+        name: 'Short-Form Video Content',
+        prompts: [
+          { title: 'TikTok/Reels/Shorts Script', difficulty: 'easy', tags: ['TikTok','Reels','Shorts'], prompt: 'Write a short-form video script for [platform].\n\nPlatform: [TikTok/Instagram Reels/YouTube Shorts]\nTopic: [video subject]\nTarget length: [15/30/60 seconds]\nTarget audience: [describe]\nGoal: [entertain/educate/inspire/sell]\nTrend/format: [trending audio/educational/storytime/transformation]\n\nStructure by second:\n0-3s: Hook (stop the scroll - bold visual + text overlay)\n3-10s: Pattern interrupt or context setup\n10-30s: Core content / value delivery\n30-45s: Demonstration or proof\n45-55s: Call to action\n55-60s: Loop point (seamless restart for views)\n\nFor each section:\n- On-screen text (text overlay)\n- Voiceover script\n- Visual description\n- Sound/music cue\n\nAlso provide: caption with hashtags (max 150 chars for TikTok, 2200 for YouTube), thumbnail text ideas, and trending audio suggestions.', shortDescription: 'Write second-by-second short-form video scripts with hooks, on-screen text, voiceover, visual cues, and viral strategies.', fullDescription: 'Creates a complete short-form video script optimized for TikTok, Instagram Reels, or YouTube Shorts with second-by-second breakdown including hooks for stopping the scroll, pattern interrupts, core value delivery, demonstration, CTAs, and loop points for re-watchability. Each section includes on-screen text overlays, voiceover script, visual descriptions, and sound or music cues. Includes platform-optimized captions with hashtag strategy, thumbnail ideas, and trending audio recommendations.' },
+          { title: 'Faceless Content Script', difficulty: 'easy', tags: ['Faceless','Content Creation'], prompt: 'Create a faceless video script for [topic/niche].\n\nNiche: [motivation/facts/storytelling/educational/ASMR]\nPlatform: [TikTok/Instagram Reels/YouTube Shorts/YouTube]\nVideo length: [seconds/minutes]\nContent angle: [list specific angle]\n\nStructure:\n1. Hook (text-on-screen + compelling visual, 0-3s)\n2. Context (B-roll with voiceover or text, 3-10s)\n3. Core content (engaging visuals matching script, 10-45s)\n4. Key insight / payoff (visual emphasis moment)\n5. CTA (follow/save/comment prompt)\n\nProvide:\n- Full voiceover script\n- B-roll visual suggestions for each scene\n- On-screen text for key moments (short, punchy)\n- Background music mood suggestion\n- Captions file (.srt formatted text)\n- Thumbnail/cover text ideas\n- Hashtag strategy (15-20 tags)\n\nStyle: [motivational/educational/calm/dramatic]', shortDescription: 'Write faceless video scripts with B-roll visuals, voiceover, text overlays, and viral strategies for anonymous content creation.', fullDescription: 'Generates a complete faceless video script requiring no on-camera presence, designed for anonymous content creation. Includes full voiceover script, detailed B-roll visual suggestions for each scene, on-screen text for key moments, background music mood suggestions, SRT-formatted caption text, thumbnail or cover text ideas, and a platform-specific hashtag strategy. Supports motivational, educational, calm, and dramatic styles across TikTok, Instagram Reels, and YouTube Shorts.' },
+        ]
+      },
+      {
+        name: 'Image & Design',
+        prompts: [
+          { title: 'Midjourney/DALL-E Prompt', difficulty: 'medium', tags: ['AI Art','Image Generation'], prompt: 'Generate image prompts for: [describe what you want]\n\nPurpose: [blog post/social media/presentation/product]\nStyle: [photorealistic/illustration/3d render/pixel art]\nMood: [professional/playful/dramatic/minimal]\nColor palette: [warm/cool/monochrome/brand colors]\n\nCreate 3 prompt variations:\n1. Detailed prompt with specific art style references\n2. Cinematic prompt with lighting and composition\n3. Abstract/conceptual interpretation\n\nEach prompt should include:\n- Subject and composition\n- Art style and medium\n- Lighting and atmosphere\n- Color palette\n- Technical parameters (--ar, --v, --style, etc)\n- Negative prompts to avoid unwanted elements', shortDescription: 'Create detailed AI image prompts with subject, style, lighting, color, and technical parameters for multiple variations.', fullDescription: 'Generates three distinct AI image prompt variations for any subject including a detailed prompt with specific art style references, a cinematic prompt with lighting and composition details, and an abstract or conceptual interpretation. Each prompt includes subject and composition, art style and medium, lighting and atmosphere, color palette, technical parameters like aspect ratio and version, and negative prompts to avoid unwanted elements in the generated image.' },
+          { title: 'Brand Color Palette', difficulty: 'easy', tags: ['Design','Color'], prompt: 'Generate a color palette for: [brand/project]\n\nIndustry: [sector]\nBrand personality: [described in adjectives]\nTarget audience: [who]\nCompetitors: [for differentiation]\nUsage: [website/app/print/branding]\n\nProvide:\n1. Primary color (1)\n2. Secondary colors (2)\n3. Accent colors (2)\n4. Neutral palette (3-4 shades)\n5. Semantic colors (success, warning, error, info)\n\nFor each color:\n- HEX value\n- RGB value\n- HSL value\n- Contrast ratio with white/black (accessibility)\n- Usage guidelines\n- Color psychology rationale\n\nAlso provide:\n- Gradient combinations\n- Color combinations to avoid\n- Dark mode alternatives', shortDescription: 'Generate complete brand color palettes with primary, secondary, accent, neutral, and semantic colors with accessibility data.', fullDescription: 'Creates a comprehensive brand color system including one primary color, two secondary colors, two accent colors, three to four neutral shades, and semantic colors for success, warning, error, and info states. Each color includes HEX, RGB, and HSL values, contrast ratios for accessibility compliance, usage guidelines, and color psychology rationale. Includes gradient combinations, color combinations to avoid, and dark mode alternative colors.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'prompt-engineering', name: 'Prompt Engineering', icon: '🧠', color: '#eab308',
+    subsections: [
+      {
+        name: 'Prompt Techniques',
+        prompts: [
+          { title: 'Chain of Thought Prompt', difficulty: 'medium', tags: ['Technique','Reasoning'], prompt: 'Use chain-of-thought reasoning to solve this:\n\nProblem: [describe your problem or question]\n\nThink through this step by step:\n1. First, identify the key components of this problem\n2. Break down what we know and what we need to find\n3. Consider relevant principles or frameworks\n4. Work through each component systematically\n5. Verify your reasoning at each step\n6. Synthesize a final answer\n\nShow your complete reasoning process, including any course corrections or alternative approaches you considered.', shortDescription: 'Solve complex problems through step-by-step reasoning with component identification, verification, and synthesis.', fullDescription: 'Guides the AI through structured multi-step reasoning by first identifying key problem components, breaking down known and unknown elements, considering relevant principles or frameworks, working through each component systematically, verifying reasoning at each step with cross-checks, and synthesizing a final answer. The complete reasoning process is visible including any course corrections or alternative approaches considered along the way.' },
+          { title: 'Few-Shot Learning Prompt', difficulty: 'medium', tags: ['Few-shot','Classification'], prompt: 'I need you to [task]. Here are examples of how it should be done:\n\nExample 1:\nInput: [example input]\nOutput: [desired output]\nReasoning: [why this output is correct]\n\nExample 2:\nInput: [example input]\nOutput: [desired output]\nReasoning: [why this output is correct]\n\nExample 3:\nInput: [example input]\nOutput: [desired output]\nReasoning: [why this output is correct]\n\nNow, apply the same approach to:\nInput: [actual input]\n\nOutput:', shortDescription: 'Teach the AI desired output patterns through carefully crafted input-output examples with reasoning for each case.', fullDescription: 'Creates a structured few-shot learning template with three complete input-output examples demonstrating the desired transformation pattern, each including reasoning explaining why the output is correct. The AI then applies the demonstrated pattern to the actual input, learning from the examples rather than explicit instructions. This approach is ideal for classification tasks, formatting conversions, and style transfer applications.' },
+          { title: 'Role-Based Expert Prompt', difficulty: 'easy', tags: ['Role','Expert'], prompt: 'Act as a [specific expert role] with [X] years of experience in [field].\n\nYour expertise includes: [specific areas]\nYour approach is known for: [characteristics]\n\nI need your help with:\n[Describe your question or problem]\n\nPlease:\n1. Assess the situation from your expert perspective\n2. Identify the core issues or opportunities\n3. Provide your professional recommendation\n4. Explain your reasoning\n5. Highlight any risks or considerations\n6. Suggest next steps\n\nRemember to stay in character as this expert throughout your response.', shortDescription: 'Assign the AI a specific expert persona with years of experience, specialized knowledge, and a defined approach style.', fullDescription: 'Transforms the AI into a specific expert role by defining the persona with years of experience in a field, specialized expertise areas, and a characteristic approach methodology. The expert assesses the situation from their unique perspective, identifies core issues and opportunities, provides professional recommendations with reasoning, highlights risks and considerations, and suggests concrete next steps while maintaining the assigned character throughout the response.' },
+          { title: 'Structured Output Prompt', difficulty: 'easy', tags: ['Structure','Format'], prompt: 'Analyze the following and provide your response in this exact format:\n\nContent to analyze:\n[Paste the content you want analyzed]\n\nRequired format:\n---\nSUMMARY: [2-3 sentence overview]\n\nKEY FINDINGS:\n1. [Finding 1]\n2. [Finding 2]\n3. [Finding 3]\n\nSTRENGTHS:\n- [Strength 1]\n- [Strength 2]\n\nWEAKNESSES:\n- [Weakness 1]\n- [Weakness 2]\n\nRECOMMENDATIONS:\n1. [Action item with priority: HIGH/MEDIUM/LOW]\n2. [Action item with priority]\n3. [Action item with priority]\n\nCONFIDENCE LEVEL: [High/Medium/Low] — [brief explanation]\n---', shortDescription: 'Force consistent formatted outputs with sections like summary, findings, strengths, weaknesses, and recommendations.', fullDescription: 'Ensures responses follow a strict structured format with predefined sections including a summary overview, key findings with numbered items, strengths and weaknesses lists, prioritized recommendations with urgency levels, and a confidence assessment. This structured approach is ideal for analysis, reviews, audits, and any task requiring consistent, scannable, and comparable outputs across multiple queries.' },
+        ]
+      },
+      {
+        name: 'Advanced Techniques',
+        prompts: [
+          { title: 'Self-Consistency Prompt', difficulty: 'advanced', tags: ['Advanced','Consistency'], prompt: 'I want you to approach this problem from multiple angles and ensure consistency.\n\nProblem: [describe the problem]\n\nStep 1: Solve this problem using [Approach A]\nStep 2: Solve this problem using [Approach B]\nStep 3: Solve this problem using [Approach C]\n\nNow compare all three solutions:\n- Where do they agree?\n- Where do they differ?\n- Which approach is most reliable for this type of problem?\n\nFinal answer: Synthesize the most consistent and reliable elements from all approaches into a single, well-validated answer.', shortDescription: 'Solve problems from multiple approaches then synthesize the most consistent and reliable final answer.', fullDescription: 'Implements a self-consistency technique by solving the same problem through three different approaches or perspectives, then comparing all solutions to identify points of agreement and disagreement. The most reliable approach is selected based on the problem type, and a final synthesized answer combines the most consistent and validated elements from all approaches into a single well-reasoned conclusion.' },
+          { title: 'Recursive Refinement Prompt', difficulty: 'advanced', tags: ['Refinement','Iteration'], prompt: 'Generate an initial response, then critique and improve it three times.\n\nTask: [describe what you need]\n\nRound 1: Generate your best initial response\nRound 2: Critique Round 1 — identify weaknesses, gaps, or errors. Then provide an improved version.\nRound 3: Critique Round 2 — find remaining issues. Provide a further refined version.\nRound 4: Final critique and polished version.\n\nShow all four rounds. For each critique, be specific about what needs improvement and why.', shortDescription: 'Generate, critique, and improve responses through four iterative rounds of refinement and critical analysis.', fullDescription: 'Creates a four-round refinement cycle starting with an initial response generation, followed by critical analysis identifying weaknesses and gaps with an improved version, a second critique finding remaining issues with further refinement, and a final polished version. Each critique is specific about what needs improvement and why, producing a progressively higher quality output through iterative self-correction and enhancement.' },
+          { title: 'Meta-Prompt Creator', difficulty: 'advanced', tags: ['Meta','Template'], prompt: 'I want to create a reusable prompt template for: [use case]\n\nThe prompt should:\n- Work for [various inputs/situations]\n- Produce consistent, high-quality outputs\n- Include placeholders for customization\n- Handle edge cases gracefully\n\nPlease:\n1. Design the prompt template with [variable] placeholders\n2. Explain each section and why it\'s included\n3. Provide 3 example usages with different inputs\n4. Suggest variations for different contexts\n5. Include tips for getting the best results\n6. Note any limitations or common failure modes', shortDescription: 'Design reusable prompt templates with placeholders, section explanations, example usages, and optimization tips.', fullDescription: 'Creates versatile prompt templates for any use case including variable placeholders for easy customization, explanations of each section and its purpose, three example usages with different inputs demonstrating versatility, suggested variations for different contexts and audiences, tips for optimal results, and documentation of known limitations and common failure modes to help users get the best outcomes from the template.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'social', name: 'Social Media & Community', icon: '💬', color: '#14b8a6',
+    subsections: [
+      {
+        name: 'Platform-Specific',
+        prompts: [
+          { title: 'Twitter/X Thread', difficulty: 'easy', tags: ['Twitter','Thread'], prompt: 'Create a Twitter/X thread on: [topic]\n\nGoal: [educate/entertain/persuade]\nTarget audience: [who]\nThread length: [8-15 tweets]\n\nStructure:\n1. Hook tweet (pattern interrupt, bold claim, or question)\n2. Context-setting tweet\n3. Core content tweets (value-packed, one idea each)\n4. Evidence/support tweets (data, examples)\n5. Conclusion tweet with CTA\n\nFor each tweet:\n- Stay under 280 characters\n- Include relevant hashtags (2-3 max)\n- Suggest an image or emoji placement\n- Make each tweet standalone valuable\n\nAlso provide:\n- Best posting time\n- Engagement strategy (replies, quotes)\n- Follow-up content ideas', shortDescription: 'Write engaging Twitter threads with hook tweets, value-packed core tweets, and CTAs optimized for the algorithm.', fullDescription: 'Creates complete Twitter threads of 8-15 tweets including a pattern-interrupt hook tweet, context-setting introduction, value-packed core tweets each with a single idea, evidence and data tweets for credibility, and a conclusion with a clear CTA. Each tweet stays under 280 characters with relevant hashtags, emoji placement suggestions, and standalone value so each tweet is useful even if read in isolation. Includes posting time and engagement strategy.' },
+          { title: 'LinkedIn Thought Leadership', difficulty: 'medium', tags: ['LinkedIn','Content'], prompt: 'Write a LinkedIn post for: [topic/insight]\n\nMy role: [position]\nIndustry: [sector]\nGoal: [build authority/start conversation/generate leads]\n\nFormat:\n1. Hook line (stop the scroll)\n2. Story or observation\n3. Key insight or lesson\n4. Actionable takeaway\n5. Discussion question\n\nRequirements:\n- 150-200 words (optimal length)\n- Use line breaks for readability\n- Include relevant emojis (sparingly)\n- No links in post (algorithm penalty)\n- 3-5 relevant hashtags at end\n\nAlso provide:\n- First comment strategy\n- Best time to post\n- How to engage with comments', shortDescription: 'Write LinkedIn posts that stop the scroll with hooks, personal stories, actionable insights, and discussion questions.', fullDescription: 'Crafts LinkedIn thought leadership posts including a pattern-interrupt hook line, a personal story or industry observation, a key insight or lesson with original thinking, an actionable takeaway readers can implement immediately, and a discussion question to drive comments. Posts are 150-200 words with line breaks for readability, sparse emoji usage, no algorithmic link penalties, and 3-5 hashtags. Includes first comment strategy and engagement tactics.' },
+          { title: 'Reddit Post Strategy', difficulty: 'medium', tags: ['Reddit','Community'], prompt: 'Help me create a Reddit strategy for: [goal]\n\nSubreddits: [target subreddits]\nGoal: [awareness/traffic/community building]\nBrand: [what you represent]\n\nProvide:\n1. Post title options (following subreddit rules)\n2. Post body that provides genuine value\n3. Comment strategy for common questions\n4. Rules compliance checklist\n5. Red flags to avoid (self-promotion bans)\n6. Karma-building approach\n7. Long-term community participation plan\n8. Content calendar (2-week)\n9. Metrics to track success', shortDescription: 'Create Reddit strategies with rule-compliant posts, value-first content, comment tactics, and karma-building approaches.', fullDescription: 'Develops a complete Reddit engagement strategy including post title options following subreddit-specific rules, post body content that provides genuine community value, comment strategy for engaging on relevant threads, a rules compliance checklist for each target subreddit, self-promotion guidelines to avoid bans, karma-building approach for account credibility, long-term community participation plan, a 2-week content calendar, and success metrics for tracking progress.' },
+        ]
+      },
+      {
+        name: 'Community Building',
+        prompts: [
+          { title: 'Discord Server Setup', difficulty: 'medium', tags: ['Discord','Community'], prompt: 'Design a Discord server for: [community purpose]\n\nAudience: [who joins]\nSize goal: [members]\nPurpose: [support/networking/learning/fan community]\n\nProvide:\n1. Channel structure (categories and channels)\n2. Channel descriptions and rules\n3. Role hierarchy and permissions\n4. Onboarding flow\n5. Bot recommendations (moderation, engagement)\n6. Welcome message and rules\n7. Event and announcement strategy\n8. Moderation guidelines\n9. Growth tactics\n10. Engagement mechanics (events, challenges, rewards)', shortDescription: 'Design Discord servers with channel structures, role hierarchies, onboarding flows, and community engagement mechanics.', fullDescription: 'Creates a complete Discord server design including channel categories and individual channels with descriptions and purposes, detailed role hierarchy with specific permissions for each role, automated onboarding flow for new members, bot recommendations for moderation and engagement, welcome message and server rules templates, event and announcement strategies, moderation guidelines for the team, growth tactics for member acquisition, and engagement mechanics like events, challenges, and rewards.' },
+          { title: 'Newsletter Growth Strategy', difficulty: 'medium', tags: ['Newsletter','Growth'], prompt: 'Create a newsletter growth strategy for: [newsletter topic]\n\nCurrent subscribers: [number]\nGoal: [target number]\nPlatform: [Substack/Mailchimp/ConvertKit/etc]\nFrequency: [daily/weekly/biweekly]\n\nProvide:\n1. Content strategy for retention\n2. Lead magnet ideas (5)\n3. Cross-promotion opportunities\n4. Social media repurposing plan\n5. Referral program design\n6. Guest posting strategy\n7. SEO for newsletter archive\n8. Partnership outreach templates\n9. 90-day growth plan\n10. Metrics dashboard design', shortDescription: 'Build newsletter growth plans with lead magnets, cross-promotions, referral programs, and 90-day action plans.', fullDescription: 'Develops a comprehensive newsletter growth strategy including a content strategy for subscriber retention, five lead magnet ideas to capture new subscribers, cross-promotion opportunities with complementary newsletters, a social media repurposing plan for content amplification, referral program design with incentives, guest posting strategy on relevant platforms, SEO optimization for newsletter archive, partnership outreach templates, a detailed 90-day growth plan, and a metrics dashboard for tracking subscriber growth and engagement.' },
+        ]
+      }
+    ]
+  },
+  // ===== CATEGORY 13: FREELANCERS & SOLOPRENEURS =====
+  {
+    id: 'freelance', name: 'Freelancers & Solopreneurs', icon: '💼', color: '#f43f5e',
+    subsections: [
+      {
+        name: 'Client Management',
+        prompts: [
+          { title: 'Client Onboarding Questionnaire', difficulty: 'easy', tags: ['Freelance','Client Management'], prompt: 'You are a freelance consultant with 10+ years of experience managing client relationships. Design a comprehensive client onboarding questionnaire for a [service type] freelancer.\n\nClient industry: [industry]\nTypical project size: [small/medium/large]\nService offered: [describe]\n\nInclude sections for:\n1. Company background and goals\n2. Project scope and deliverables\n3. Timeline and milestones\n4. Budget and payment terms\n5. Communication preferences\n6. Brand guidelines and assets needed\n7. Stakeholder contact info\n8. Success metrics and KPIs\n9. Legal and compliance requirements\n10. Approval process and decision-makers\n\nProvide the questionnaire as a ready-to-copy template with fill-in-the-blank fields.', shortDescription: 'Build a professional client onboarding questionnaire to gather requirements, set expectations, and start projects smoothly.', fullDescription: 'Creates a comprehensive onboarding questionnaire covering company background, project scope, timeline, budget, communication preferences, brand assets, stakeholder info, success metrics, legal requirements, and approval processes. Designed as a ready-to-copy template that sets clear expectations and prevents scope creep from day one.' },
+          { title: 'Project Scope & Deliverables', difficulty: 'medium', tags: ['Freelance','Scope'], prompt: 'You are a senior project manager and freelance consultant. Create a detailed project scope document template for a [type] freelance project.\n\nProject type: [web design/development/writing/marketing/consulting]\nClient industry: [industry]\nEstimated duration: [weeks/months]\n\nInclude the following sections with placeholder fields:\n1. Project overview and objectives\n2. Scope of work (detailed deliverables list)\n3. Out of scope items (explicit exclusions)\n4. Technical requirements and dependencies\n5. Milestones with delivery dates\n6. Revision policy and change request process\n7. Acceptance criteria for each deliverable\n8. Communication and reporting cadence\n9. Assumptions and dependencies\n10. Sign-off section\n\nAlso provide 3 common scope creep scenarios and how to handle them in the document.', shortDescription: 'Create a thorough project scope document that defines deliverables, exclusions, milestones, and prevents scope creep.', fullDescription: 'Generates a professional scope document template with detailed deliverables, explicit out-of-scope items, revision policies, acceptance criteria, and change request processes. Includes common scope creep scenarios and how to address them contractually.' },
+          { title: 'Client Follow-Up Sequence', difficulty: 'easy', tags: ['Freelance','Communication'], prompt: 'Write a client follow-up email sequence for a freelancer who has sent a proposal but hasn\'t heard back.\n\nService offered: [your service]\nProposal value: [amount]\nClient name: [name]\nDays since proposal sent: [number]\nPrevious interactions: [brief context]\n\nCreate 3 follow-up emails:\n1. Day 3 follow-up (gentle reminder, value reinforcement)\n2. Day 7 follow-up (social proof, deadline mention)\n3. Day 14 follow-up (final check, open door)\n\nEach email:\n- Subject line (testable variant)\n- Body (under 150 words)\n- Specific CTA\n- Personalization hook\n\nTone: [professional/friendly/consultative]', shortDescription: 'Generate a strategic 3-email follow-up sequence to re-engage prospects after sending a proposal.', fullDescription: 'Creates a timed follow-up cadence with three emails sent at strategic intervals. Each email has a specific goal: gentle reminder with value reinforcement, social proof with mild urgency, and a final open-door closing. Includes subject lines and CTAs optimized for freelance proposal follow-up.' },
+        ]
+      },
+      {
+        name: 'Pricing & Proposals',
+        prompts: [
+          { title: 'Service Package Builder', difficulty: 'medium', tags: ['Pricing','Freelance'], prompt: 'You are a pricing strategist who has helped 200+ freelancers structure their service packages. Help me create compelling service packages for my freelance business.\n\nMy service: [describe]\nTarget audience: [who you serve]\nCurrent pricing: [hourly/project/retainer]\nExperience level: [beginner/intermediate/expert]\nMonthly income goal: [amount]\n\nDesign 3 service tiers using the Good-Better-Best framework:\n\nTIER 1 - Basic (Good):\n- Core deliverables\n- Price point\n- Timeline\n- What\'s included\n\nTIER 2 - Standard (Better):\n- Everything in Basic plus\n- Additional value adds\n- Sweet spot pricing\n\nTIER 3 - Premium (Best):\n- Everything in Standard plus\n- VIP treatment\n- Highest value pricing\n\nFor each tier provide: name, price, deliverables list, target client type, and a compelling "buy now" reason.', shortDescription: 'Design a 3-tier Good-Better-Best service package with strategic pricing, deliverables, and buyer psychology.', fullDescription: 'Creates a complete pricing structure using the Good-Better-Best framework. Each tier includes strategic pricing based on value metrics, detailed deliverables, ideal client profile, and psychological triggers that make each tier compelling. Includes anchoring strategies to drive clients to your target tier.' },
+          { title: 'Freelance Proposal Template', difficulty: 'medium', tags: ['Proposal','Freelance'], prompt: 'Write a persuasive freelance proposal template for [service type] project.\n\nClient: [client name/type]\nProblem they need solved: [describe]\nMy solution: [brief description]\nTimeline: [duration]\nBudget range: [amount]\n\nStructure the proposal with these sections:\n1. Subject line and proposal title\n2. Personal greeting and context reference\n3. Problem statement (show you understand their pain)\n4. Solution overview (features and approach)\n5. Deliverables timeline (visual or table format)\n6. Investment and payment terms\n7. About me (credibility, past results)\n8. Testimonials or case study snippet\n9. Call to action and next steps\n10. FAQ addressing common objections\n\nWrite in a consultative tone. Keep it under 2 pages. Include placeholders for customization.', shortDescription: 'Create a persuasive, consultative proposal template that positions you as the solution to the client\'s specific problem.', fullDescription: 'Generates a complete 2-page proposal template with sections for problem statement, solution overview, timeline, investment, credibility, and FAQ. Uses consultative tone with psychological hooks throughout. Includes placeholders for customization and an FAQ section that pre-addresses common objections.' },
+          { title: 'Retainer Agreement Generator', difficulty: 'advanced', tags: ['Retainer','Contract'], prompt: 'Draft a retainer agreement template for freelance [service] services.\n\nService type: [marketing/development/design/writing/consulting]\nMonthly retainer amount: $[amount]\nHours included: [hours] per month\nContract term: [months] months (renewable)\n\nInclude clauses for:\n1. Services covered and excluded\n2. Monthly hour allocation and rollover policy\n3. Invoicing and payment terms (Net-15/30)\n4. Communication and response time SLAs\n5. Scope change and overage billing\n6. Termination and notice period\n7. Intellectual property ownership\n8. Confidentiality and NDA\n9. Non-solicitation (mutual)\n10. Dispute resolution\n\nWrite in plain English. Note which clauses are standard vs. negotiable.', shortDescription: 'Generate a plain-English retainer agreement with SLAs, overage billing, IP ownership, and termination terms.', fullDescription: 'Creates a comprehensive retainer agreement covering scope of work, hour allocation and rollover, payment terms, response time SLAs, change order process, termination clauses, IP ownership, confidentiality, non-solicitation, and dispute resolution. Written in plain English with notes on standard vs. negotiable clauses.' },
+        ]
+      },
+      {
+        name: 'Freelance Operations',
+        prompts: [
+          { title: 'Freelancer Productivity System', difficulty: 'easy', tags: ['Productivity','Freelance'], prompt: 'Design a productivity system for a freelance [profession].\n\nProfession: [designer/developer/writer/marketer/consultant]\nAverage projects per month: [number]\nPain points: [time tracking/procrastination/admin work/context switching]\nTools currently used: [list]\n\nProvide:\n1. Weekly schedule template (time-blocked)\n2. Daily routine with energy management\n3. Project time estimation guide\n4. Admin day vs. deep work day structure\n5. Tool stack recommendations (project management, time tracking, invoicing, CRM)\n6. Batching strategy for similar tasks\n7. Break and recovery schedule\n8. Quarterly planning template\n9. Metrics to track (utilization rate, project margin, etc.)', shortDescription: 'Build a complete productivity system with time-blocked schedules, batching strategies, and smart tool stacks for freelancers.', fullDescription: 'Designs a tailored productivity system including weekly time-blocked templates, energy-optimized daily routines, project estimation guides, admin/deep work day separation, recommended tool stack (project management, time tracking, invoicing, CRM), task batching strategies, recovery scheduling, quarterly planning templates, and key metrics like utilization rate and project margin.' },
+          { title: 'Client Feedback Processor', difficulty: 'medium', tags: ['Feedback','Freelance'], prompt: 'You are a freelance mediator and client relationship expert. Help me process and respond to difficult client feedback.\n\nClient type: [long-term/one-time/potential]\nProject stage: [in progress/completed/delivered]\nFeedback received:\n[Paste the client\'s feedback here]\n\nAnalyze the feedback and provide:\n1. Core issue identification (what they really mean)\n2. Emotional tone analysis\n3. Three response options:\n   a. Diplomatic (preserve relationship)\n   b. Direct (clear boundaries)\n   c. Compromise (find middle ground)\n4. Script for each option\n5. Revision or resolution plan\n6. How to prevent this issue with future clients\n7. Red flags to watch for (unreasonable demands vs valid concerns)', shortDescription: 'Analyze difficult client feedback and generate diplomatic, direct, or compromise response options with scripts.', fullDescription: 'Processes client feedback through a professional lens: identifies the core issue beneath the emotional tone, generates three response strategies (diplomatic, direct, compromise) with ready-to-use scripts, creates a resolution plan, and provides prevention strategies for future client relationships. Includes red flag detection to distinguish valid concerns from unreasonable demands.' },
+        ]
+      }
+    ]
+  },
+  // ===== CATEGORY 14: AI AGENTS & AUTOMATION =====
+  {
+    id: 'agents', name: 'AI Agents & Automation', icon: '🤖', color: '#64748b',
+    subsections: [
+      {
+        name: 'Agent Setup & Design',
+        prompts: [
+          { title: 'Custom GPT/Agent Builder', difficulty: 'advanced', tags: ['Agents','GPT'], prompt: 'You are an AI agent architect specializing in custom GPT and assistant design. Design a custom AI agent for [use case].\n\nAgent purpose: [describe what the agent should do]\nTarget users: [who will interact with it]\nKey features needed: [list]\nData sources available: [documents, APIs, databases]\nConstraints: [safety, accuracy, latency requirements]\n\nProvide:\n1. System prompt with persona, rules, and boundaries\n2. Knowledge base structure and key documents to include\n3. Conversation starters (4-6 suggested prompts)\n4. Capabilities to enable (web browsing, DALL-E, code interpreter, etc.)\n5. Fallback behavior for queries outside scope\n6. Tone and style guide for responses\n7. Testing checklist before deployment\n8. Version tracking and iteration plan', shortDescription: 'Design a complete custom AI agent with system prompt, knowledge base, capabilities, fallbacks, and testing plan.', fullDescription: 'Creates a comprehensive agent design document covering the system prompt with detailed persona and guardrails, knowledge base structure with recommended source documents, thoughtfully designed conversation starters, appropriate capability configuration (web browsing, code execution, image generation, file handling), graceful fallback behaviors for out-of-scope queries, a consistent tone and style guide, and a pre-deployment testing checklist with version tracking plan.' },
+          { title: 'Agent Persona & Guardrails', difficulty: 'advanced', tags: ['Agents','Safety'], prompt: 'Design a persona and safety guardrails system for an AI agent in [domain].\n\nDomain: [customer support/sales/education/healthcare/finance]\nAgent role: [describe]\nRisk level: [low/medium/high]\nCompliance requirements: [GDPR/HIPAA/SOC2/None]\n\nProvide:\n1. Agent persona (name, role, expertise, tone, communication style)\n2. Allowed behaviors and actions\n3. Restricted behaviors and topics (hard blocks)\n4. Escalation triggers and handoff protocol\n5. Data handling rules (PII, sensitive info)\n6. Confidence thresholds for different actions\n7. Disclaimers to include in responses\n8. Audit trail and logging requirements\n9. Human oversight approval gates\n10. Monthly review and improvement cycle', shortDescription: 'Create a complete AI agent persona with safety guardrails, escalation protocols, and compliance boundaries.', fullDescription: 'Defines a detailed agent persona including identity, expertise, tone, and communication style. Establishes clear safety guardrails with allowed/restricted behaviors, hard topic blocks, escalation triggers with handoff protocols, strict data handling rules for PII and sensitive information, confidence thresholds for autonomous vs. human-assisted actions, required disclaimers, comprehensive audit trails, approval gates for high-risk actions, and a continuous improvement cycle with monthly reviews.' },
+          { title: 'Agent Memory & Context Design', difficulty: 'advanced', tags: ['Agents','Memory'], prompt: 'Design a memory and context management system for an AI agent that [describe agent purpose].\n\nSession length: [single/ongoing/permanent]\nUser interactions per session: [average number]\nKey information to remember: [user preferences, history, data]\nIntegration requirements: [CRM, database, external tools]\n\nProvide:\n1. Short-term memory (session context) structure\n2. Long-term memory (cross-session) storage strategy\n3. Key information extraction rules\n4. Memory retrieval and ranking logic\n5. Context window optimization (priority token allocation)\n6. Forgetting/archival policy\n7. User-controlled memory management (edit/delete)\n8. Privacy and compliance considerations\n9. Implementation approach (RAG, vector DB, etc.)\n10. Testing scenarios for memory accuracy', shortDescription: 'Design a sophisticated memory system for AI agents with short-term, long-term, and user-controlled memory management.', fullDescription: 'Creates a complete memory architecture including session context management, cross-session long-term storage using vector databases or RAG, intelligent information extraction rules, relevance-based memory retrieval and ranking, context window optimization with priority token allocation, archival policies for stale information, user-facing memory editing and deletion capabilities, privacy considerations, and comprehensive testing scenarios to verify memory accuracy and consistency.' },
+        ]
+      },
+      {
+        name: 'Workflow Automation',
+        prompts: [
+          { title: 'Multi-Step Automation Blueprint', difficulty: 'medium', tags: ['Automation','Workflow'], prompt: 'Design a multi-step automation workflow for [business process].\n\nProcess to automate: [describe]\nTools involved: [list of SaaS tools]\nTrigger event: [what starts this process]\nSteps currently done manually: [list]\nVolume: [how many times per week/month]\n\nProvide:\n1. End-to-end workflow diagram (text-based step flow)\n2. Trigger configuration (webhook, schedule, form submission)\n3. Step-by-step actions with conditional branching\n4. Data transformation and mapping between tools\n5. Error handling and retry logic\n6. Notification and alerting setup\n7. Human approval gates (if needed)\n8. Testing methodology\n9. Monitoring and maintenance plan\n10. Estimated time savings and ROI calculation', shortDescription: 'Design an end-to-end multi-step automation workflow with conditional logic, error handling, and human approval gates.', fullDescription: 'Generates a complete automation blueprint including a text-based workflow diagram, trigger configuration, all steps with conditional branching and data transformations, error handling and retry logic, notification systems, human-in-the-loop approval gates, testing methodology with sample test cases, ongoing monitoring plan, and a detailed ROI calculation showing time and cost savings.' },
+          { title: 'Zapier/Make Advanced Workflow', difficulty: 'medium', tags: ['Automation','No-Code'], prompt: 'Create an advanced [Zapier/Make] workflow for [task to automate].\n\nTask: [describe]\nTrigger app + event: [e.g., Typeform new submission]\nAction apps: [list apps involved]\nData complexity: [simple fields / nested objects / file attachments]\n\nProvide:\n1. Complete workflow configuration\n2. Trigger setup with filters\n3. Each action step with field mapping\n4. Conditional logic and path creation\n5. Formatter/parser steps needed\n6. Error handling step (digest email on failure)\n7. Delay and scheduling configuration\n8. Webhook integration details\n9. Testing checklist\n10. Performance optimization tips (reduce tasks, use filters)\n\nAlso include: common pitfalls for this specific workflow and how to avoid them.', shortDescription: 'Build an advanced Zapier/Make automation with filters, conditional paths, data formatting, and error handling.', fullDescription: 'Provides a complete no-code automation workflow configuration covering trigger setup with filters, detailed action steps with field mapping, conditional branching paths, data transformation and parsing steps, error handling with failure notifications, delays and scheduling, webhook integrations, a thorough testing checklist, performance optimization tips, and common pitfalls specific to the workflow with prevention strategies.' },
+          { title: 'Data Pipeline Automation', difficulty: 'advanced', tags: ['Data','Pipeline'], prompt: 'Design a data pipeline for [data source] to [destination].\n\nData source: [CSV file, API, database, Google Sheets, CRM]\nDestination: [data warehouse, analytics tool, dashboard, CRM]\nUpdate frequency: [real-time/daily/weekly]\nData volume: [rows/records per batch]\nTransformation needs: [cleaning, joining, aggregating, filtering]\n\nProvide:\n1. Pipeline architecture overview\n2. Extraction method (incremental/full refresh)\n3. Transformation logic (step by step)\n4. Loading strategy (append/upsert/replace)\n5. Scheduling and orchestration\n6. Data quality checks and validation\n7. Error handling and retry policy\n8. Monitoring and alerting setup\n9. Cost estimation (compute + API calls)\n10. Documentation template for the pipeline', shortDescription: 'Design a reliable data pipeline with extraction, transformation, loading, validation, and monitoring.', fullDescription: 'Creates a complete data pipeline design including architecture overview, incremental or full refresh extraction strategy, step-by-step transformation logic, appropriate loading strategy (append/upsert/replace), scheduling and orchestration with tools like Airflow or Prefect, data quality validation checkpoints, comprehensive error handling with retry policies, monitoring dashboards and alerting thresholds, cost analysis, and a reusable documentation template.' },
+        ]
+      }
+    ]
+  },
+  // ===== CATEGORY 15: SALES & OUTREACH =====
+  {
+    id: 'sales', name: 'Sales & Outreach', icon: '🤝', color: '#0ea5e9',
+    subsections: [
+      {
+        name: 'Cold Outreach',
+        prompts: [
+          { title: 'Cold Email Sequence', difficulty: 'medium', tags: ['Cold Email','Sales'], prompt: 'Write a 5-email cold outreach sequence for [product/service].\n\nTarget prospect: [job title, industry, company size]\nValue proposition: [one sentence]\nKey differentiator: [what makes you unique]\nCase study/social proof: [brief result you can mention]\n\nEmail 1: Hook & value (reference something specific about them)\nEmail 2: Problem awareness (expand on the pain point)\nEmail 3: Social proof (case study or testimonial)\nEmail 4: Value add (resource, article, tool - no pitch)\nEmail 5: Breakup email (final attempt, open loop)\n\nEach email:\n- Compelling subject line (test 2 variants)\n- Under 100 words\n- Single focus/CTA\n- Personalization hook\n- PS line for extra engagement\n\nAlso provide: best send times, A/B testing strategy, and follow-up timing between emails.', shortDescription: 'Create a 5-email cold outreach sequence with hooks, social proof, value-add content, and a breakup email.', fullDescription: 'Builds a complete cold email sequence with five strategically timed emails: value-driven hook with personalization, problem awareness deepener, social proof with case study, no-pitch value-add resource, and a final breakup email. Each email includes two subject line variants, stays under 100 words, has a single CTA, and uses a PS line for extra engagement. Includes send time optimization, A/B testing strategy, and inter-email timing recommendations.' },
+          { title: 'LinkedIn Outreach Script', difficulty: 'easy', tags: ['LinkedIn','Networking'], prompt: 'Create a LinkedIn outreach strategy for connecting with [target audience].\n\nTarget audience: [job titles, industries]\nGoal: [sell/partner/hire/network]\nMy value: [what I offer]\nConnection limit: [requests per week]\n\nProvide:\n1. Profile optimization checklist (headline, about, featured)\n2. Connection request note (3 variants, under 300 chars)\n3. After-acceptance message (send right after they accept)\n4. Follow-up messages (3-message sequence)\n5. Voice note script option (for higher response)\n6. Content strategy to attract inbound interest\n7. Engagement tactics (commenting, sharing, reacting)\n8. CRM/tracking system for outreach efforts\n9. Metrics to track (acceptance rate, reply rate, meeting rate)\n10. Common mistakes and LinkedIn algorithm considerations', shortDescription: 'Build a complete LinkedIn outreach system with profile optimization, connection scripts, and content strategy.', fullDescription: 'Generates a full LinkedIn outreach framework covering profile optimization for discoverability, three variants of connection request notes under 300 characters, strategic after-acceptance messaging, a 3-part follow-up sequence, optional voice note scripts, content strategy to attract inbound leads, daily engagement tactics, CRM tracking setup, key metrics with benchmarks, and algorithm best practices to avoid restrictions or shadowbanning.' },
+          { title: 'Follow-Up Cadence', difficulty: 'easy', tags: ['Sales','Follow-up'], prompt: 'Design a sales follow-up cadence after an initial conversation or demo.\n\nProduct/service: [describe]\nLead type: [warm/inbound/outbound/former client]\nDemo/call date: [date]\nObjections raised: [list if any]\nDecision timeline: [immediate/this quarter/next quarter]\n\nCreate a 7-touch follow-up cadence over 14 days:\n\nTouch 1 (Day 1): Thank you + summary + next steps\nTouch 2 (Day 3): Value-add resource related to their problem\nTouch 3 (Day 5): Social proof (case study, testimonial)\nTouch 4 (Day 7): Check-in with specific question\nTouch 5 (Day 9): Industry insight or trend relevant to them\nTouch 6 (Day 12): Direct ask for decision or meeting\nTouch 7 (Day 14): Breakup or "keeping the door open"\n\nFor each touch: channel (email/phone/LinkedIn), script, timing, and exit strategy if no response.', shortDescription: 'Design a 7-touch, 14-day sales follow-up cadence with multi-channel scripts and exit strategies.', fullDescription: 'Creates a comprehensive 14-day follow-up sequence with 7 strategic touches across email, phone, and LinkedIn. Each touch has a specific goal: thank you with summary, value-add resource, social proof, strategic check-in, industry insight, direct close ask, and a graceful breakup. Includes full scripts, optimal timing between touches, channel selection rationale, and exit strategies at each stage to maintain professional relationships even without a close.' },
+        ]
+      },
+      {
+        name: 'Sales Scripts',
+        prompts: [
+          { title: 'Discovery Call Script', difficulty: 'medium', tags: ['Sales','Discovery'], prompt: 'Write a discovery call script for a sales conversation about [product/service].\n\nProspect role: [job title]\nCompany size: [employees]\nIndustry: [sector]\nCall length: [30/45/60 minutes]\n\nStructure the script:\n1. Opening (30 sec): Thank them, set agenda, get permission\n2. Qualification (5 min): Budget, authority, need, timeline\n3. Problem discovery (10 min): MEDDIC framework questions\n   - Metrics: How do you measure success?\n   - Economic buyer: Who else needs to approve?\n   - Decision criteria: What matters most?\n   - Identify pain: What\'s the cost of doing nothing?\n   - Champion: Who else wants this?\n4. Presentation (10 min): Tailored to their specific needs\n5. Objection handling (5 min): Common objections and responses\n6. Next steps (5 min): Clear action items and commitment\n\nAlso provide: pre-call research checklist, objection cheat sheet, and post-call debrief template.', shortDescription: 'Write a structured discovery call script using MEDDIC qualification with objection handling and next steps.', fullDescription: 'Creates a complete discovery call script with six structured phases: opening with agenda-setting, qualification using BANT/MEDDIC, deep problem discovery with specific questions, tailored presentation linked to discovered pain points, objection handling with proven responses, and clear next steps with commitment. Includes a pre-call research checklist, objection cheat sheet with the 5 most common objections and rebuttals, and a post-call debrief template for documentation.' },
+          { title: 'Product Demo Script', difficulty: 'medium', tags: ['Demo','Presentation'], prompt: 'Create a product demo script for [product name] targeting [audience].\n\nProduct type: [SaaS/app/service]\nKey features to highlight: [list 3-5]\nTarget audience role: [decision maker/end user/technical buyer]\nDemo length: [30/45 minutes]\nCompetitive differentiators: [what makes you better]\n\nStructure:\n1. Setup (2 min): Context, agenda, what success looks like\n2. Discovery recap (3 min): "You mentioned X, here\'s how we solve it"\n3. Feature walkthrough (20 min): Tell-Show-Tell format\n   - Tell them what it does\n   - Show them in the product\n   - Tell them why it matters to them\n4. Use case demonstration (10 min): Their specific scenario\n5. Objection handling (5 min): Address concerns proactively\n6. ROI discussion (3 min): Value quantification\n7. Next steps (2 min): Trial, procurement process\n\nInclude: screen sharing tips, engagement check questions, and timing markers.', shortDescription: 'Create a consultative product demo script using Tell-Show-Tell format with timing markers and engagement checks.', fullDescription: 'Provides a complete product demo script using the Tell-Show-Tell methodology for each feature. Includes setup and agenda, discovery recap linking features to their stated needs, timed feature walkthroughs with engagement check questions every 5 minutes, a personalized use case demonstration, proactive objection handling, quantified ROI discussion, and clear next steps. Includes screen sharing best practices and timing markers throughout.' },
+        ]
+      },
+      {
+        name: 'Negotiation',
+        prompts: [
+          { title: 'Salary Negotiation Script', difficulty: 'medium', tags: ['Negotiation','Career'], prompt: 'Help me prepare for a salary negotiation.\n\nJob title: [role]\nCompany: [name/type]\nOffer amount: $[amount]\nTarget amount: $[amount]\nMy current salary: $[amount] (optional)\nMarket range for this role: $[range]\nMy key qualifications: [list top 3-5]\nOther competing offers: [yes/no]\n\nProvide:\n1. Pre-negotiation research checklist\n2. Opening statement script (collaborative tone)\n3. Counter-offer script with justification\n4. Handling common pushbacks:\n   - "That\'s the top of our budget"\n   - "We can\'t match that"\n   - "What about total compensation?"\n5. Non-salary negotiation (equity, PTO, remote, title, bonus)\n6. Email template for written negotiation\n7. Walk-away criteria and red lines\n8. Post-negotiation acceptance script\n9. Psychological tactics (anchoring, silence, reciprocity)', shortDescription: 'Full salary negotiation preparation with scripts for common pushbacks, non-salary tradeoffs, and walk-away criteria.', fullDescription: 'Provides complete salary negotiation preparation including market research checklist, collaborative opening statement, structured counter-offer with data-backed justification, scripts for handling the five most common employer pushbacks, non-salary negotiation options (equity, PTO, remote work, title, bonus structure), written email negotiation template, clear walk-away criteria, post-acceptance script, and psychological tactics like anchoring, strategic silence, and reciprocity.' },
+          { title: 'Vendor Negotiation Playbook', difficulty: 'advanced', tags: ['Negotiation','Business'], prompt: 'Create a vendor/supplier negotiation playbook for [product/service being purchased].\n\nVendor type: [SaaS/agency/contractor/supplier]\nContract value: $[amount]\nContract term: [months/years]\nCurrent vendor: [existing/new/competitor situation]\nMy leverage points: [volume, alternatives, timing, budget flexibility]\n\nProvide:\n1. Pre-negotiation preparation checklist\n2. BATNA (Best Alternative to Negotiated Agreement) analysis\n3. Key terms to negotiate ranked by priority\n4. Opening position vs walk-away thresholds\n5. Concession strategy (what to give, what to get in return)\n6. Common vendor tactics and counter-strategies\n7. Discount structures and volume pricing models\n8. Payment term negotiation (Net-30/60/90, prepay discounts)\n9. SLA and penalty clause negotiation\n10. Contract review checklist (auto-renewal, termination, price increases)\n11. Multi-year deal structures\n12. Post-negotiation relationship management', shortDescription: 'A comprehensive vendor negotiation playbook with BATNA analysis, concession strategy, and contract term tactics.', fullDescription: 'Generates a complete negotiation playbook including preparation checklist, BATNA analysis for leverage identification, prioritized term negotiation list, opening vs. walk-away positions, structured concession strategy with trade-offs, common vendor tactics with counter-strategies, volume pricing models, payment term optimization, SLA and penalty clause negotiation points, contract review checklist targeting auto-renewal and price increase protections, multi-year deal structuring, and post-negotiation vendor relationship management.' },
+        ]
+      }
+    ]
+  },
+  // ===== CATEGORY 16: CUSTOMER SUPPORT =====
+  {
+    id: 'support', name: 'Customer Support', icon: '🎧', color: '#84cc16',
+    subsections: [
+      {
+        name: 'Support Scripts',
+        prompts: [
+          { title: 'Customer Support Response', difficulty: 'easy', tags: ['Support','Communication'], prompt: 'Write a customer support response to the following inquiry/complaint:\n\nCustomer issue:\n[Paste customer message]\n\nProduct/Service: [name]\nCustomer tier: [VIP/regular/new]\nChannel: [email/chat/phone/social media]\nCompany tone: [friendly/professional/playful]\n\nResponse structure:\n1. Acknowledge and empathize (validate their feeling)\n2. Apologize (if applicable - sincere, not legalistic)\n3. Explain what happened (in simple terms)\n4. Provide the solution (specific action being taken)\n5. Timeline for resolution\n6. Offer compensation (if appropriate)\n7. Closing and handoff (if needed)\n\nAlso provide: 2 alternative response approaches (less formal, more formal), and a note on what could have prevented this issue.', shortDescription: 'Generate a structured customer support response with empathy, explanation, solution, and compensation if needed.', fullDescription: 'Creates a professional customer support response following the acknowledge-empathize-explain-solve-compensate framework. Includes validation of the customer feeling, sincere apology when appropriate, plain-language explanation of the issue, specific solution with timeline, compensation recommendation based on severity and customer tier, and a warm closing. Includes two alternative tone variants and a root cause prevention note.' },
+          { title: 'Escalation & De-escalation Script', difficulty: 'medium', tags: ['Support','Conflict'], prompt: 'Write an escalation and de-escalation script for a support situation.\n\nCurrent situation:\n[Describe the escalated customer issue]\n\nCustomer emotion level: [frustrated/angry/threatening/churn risk]\nPrevious interactions: [what\'s already been done]\nYour role: [frontline/senior support/manager]\n\nProvide:\n1. De-escalation techniques for each emotion level:\n   - Angry customer script\n   - Frustrated customer script\n   - Churn-risk customer script\n2. Active listening phrases to use\n3. Phrases to NEVER use (triggers that escalate)\n4. Escalation criteria and protocol\n5. Escalation handoff template (internal note)\n6. Follow-up after escalation (check-in timing)\n7. Recovery and retention offer framework\n8. Internal debrief and process improvement notes', shortDescription: 'Master de-escalation with scripts for angry, frustrated, and churn-risk customers plus escalation protocols.', fullDescription: 'Provides comprehensive escalation management including de-escalation scripts for each emotion level (angry, frustrated, churn-risk), active listening phrases that build rapport, phrases that trigger further escalation and must be avoided, clear internal escalation criteria with handoff protocol, escalation handoff template for seamless transitions, post-escalation follow-up timing, retention offer framework based on customer value, and internal debrief process for continuous improvement.' },
+        ]
+      },
+      {
+        name: 'Ticket Management',
+        prompts: [
+          { title: 'Ticket Triage System', difficulty: 'medium', tags: ['Support','Tickets'], prompt: 'Design a ticket triage and prioritization system for [product/service] support.\n\nAverage daily tickets: [number]\nSupport team size: [agents]\nCurrent tools: [help desk, CRM, chat]\nCommon issue types: [list 5-10 common issue categories]\n\nProvide:\n1. Priority matrix (Urgent/High/Medium/Low with criteria)\n2. SLA targets per priority level\n3. Auto-categorization rules (by keyword, customer tier, issue type)\n4. Assignment logic (round-robin, skill-based, availability)\n5. Response template for each priority level\n6. Escalation triggers and paths\n7. Time-to-resolution targets per issue type\n8. Daily ticket review process\n9. Queue management for support agents\n10. Reporting and metrics dashboard\n\nInclude: a sample triage decision tree flowchart (text-based).', shortDescription: 'Design a complete ticket triage system with prioritization matrix, SLAs, auto-routing, and escalation paths.', fullDescription: 'Creates a comprehensive triage system including a detailed priority matrix with clear criteria for each level (urgent/high/medium/low), corresponding SLA targets, keyword-based auto-categorization rules, intelligent assignment logic (round-robin, skill-based, availability), response templates per priority, escalation triggers with clear paths, time-to-resolution benchmarking, daily review workflow, queue management best practices for agents, and a reporting dashboard with key metrics. Includes a sample triage decision tree.' },
+          { title: 'Bug Report Template', difficulty: 'easy', tags: ['Bug','Reporting'], prompt: 'Create a standardized bug report template for my [product/application].\n\nProduct type: [web app/mobile app/API/hardware]\nTeam size: [solo/small team/enterprise]\nCurrent bug tracking: [GitHub/Jira/Linear/Notion/Spreadsheet]\n\nProvide:\n1. Bug report template with sections:\n   - Environment (OS, browser, device, version)\n   - Steps to reproduce (numbered, specific)\n   - Expected behavior\n   - Actual behavior\n   - Screenshots/video (attachment guidelines)\n   - Severity (critical/major/minor/cosmetic)\n   - Priority (P0-P3 with definitions)\n   - Frequency (always/sometimes/rarely)\n   - Workaround (if exists)\n2. User-friendly version (for customer-submitted bugs)\n3. Internal version (for developer handoff)\n4. Severity vs Priority matrix\n5. Minimal reproduction guidelines\n6. "Good bug report" vs "bad bug report" examples', shortDescription: 'Create a standardized bug report template with severity/priority matrix, reproduction steps, and attachment guidelines.', fullDescription: 'Generates a complete bug reporting system with dual templates: a user-friendly version for customer submissions with simplified fields and a detailed internal version for developer handoff with technical context. Includes environment specification, numbered reproduction steps, expected vs actual behavior, attachment guidelines, severity definitions (critical/major/minor/cosmetic), priority levels (P0-P3) with clear definitions and a severity/priority decision matrix, frequency classification, workaround documentation, minimal reproduction guidelines, and before/after examples of good vs bad bug reports.' },
+        ]
+      },
+      {
+        name: 'FAQ & Knowledge Base',
+        prompts: [
+          { title: 'FAQ Section Generator', difficulty: 'easy', tags: ['FAQ','Documentation'], prompt: 'Generate an FAQ section about [topic/product/service].\n\nTopic: [describe]\nTarget audience: [customers/users/employees]\nCommon questions I already know: [list 3-5]\nTone: [friendly/professional/technical]\nSEO keywords to include: [list]\n\nGenerate 8-12 FAQ entries covering:\n1. Product/service basics (3 questions)\n2. Pricing and plans (2 questions)\n3. Technical/usage questions (2-3 questions)\n4. Troubleshooting (2 questions)\n5. Account/billing (2 questions)\n6. [Custom category relevant to your topic]\n\nFor each FAQ:\n- Question format (as a real person would ask)\n- Answer (2-3 sentences, include SEO keywords naturally)\n- Related question hint\n- Link to deeper resource (if applicable)\n\nAlso provide: Schema.org FAQ structured data markup for Google snippets.', shortDescription: 'Generate a complete FAQ section with natural questions, concise answers, and FAQ schema markup.', fullDescription: 'Creates a comprehensive FAQ section with 8-12 entries across 5-6 categories covering basics, pricing, usage, troubleshooting, and account management. Each entry uses natural language question phrasing as real users would search, concise answers with natural SEO keyword integration, related question suggestions, and links to deeper resources. Includes Schema.org FAQ structured data markup for Google featured snippet optimization and voice search compatibility.' },
+          { title: 'Knowledge Base Article', difficulty: 'medium', tags: ['Knowledge Base','Writing'], prompt: 'Write a knowledge base article for [topic/feature].\n\nArticle topic: [describe the subject]\nUser goal: [what the reader wants to accomplish]\nUser skill level: [beginner/intermediate/advanced]\nProduct version: [if applicable]\n\nStructure:\n1. Title (action-oriented, includes keywords)\n2. Summary (2 sentences: what this covers and when to use it)\n3. Prerequisites (what they need before starting)\n4. Step-by-step instructions (numbered steps with clear actions)\n5. Screenshot/visual cues description (what to look for)\n6. Tips and best practices\n7. Common issues and troubleshooting\n8. Related articles links\n9. Article metadata (tags, category, last updated)\n\nWrite in plain language. Assume the reader is capable but unfamiliar. One action per step.', shortDescription: 'Create a clear, action-oriented knowledge base article with step-by-step instructions and troubleshooting.', fullDescription: 'Generates a complete knowledge base article with action-oriented title, concise summary, prerequisites list, numbered step-by-step instructions with one action per step, screenshot placement cues with descriptions of what the user should see, pro tips and best practices, common issues troubleshooting section, cross-links to related articles, and article metadata (tags, category, last updated date). Written in plain language for capable but unfamiliar users.' },
+        ]
+      }
+    ]
+  },
+  // ===== CATEGORY 17: E-COMMERCE =====
+  {
+    id: 'ecommerce', name: 'E-Commerce', icon: '🛒', color: '#e11d48',
+    subsections: [
+      {
+        name: 'Product Pages',
+        prompts: [
+          { title: 'Product Description Writer', difficulty: 'easy', tags: ['E-Commerce','Copywriting'], prompt: 'Write a compelling product description for [product name].\n\nProduct type: [physical/digital/SaaS]\nCategory: [clothing/electronics/home/software/service]\nTarget audience: [demographic and psychographic]\nKey features: [list 3-5]\nBenefits: [what problems it solves]\nPrice point: $[amount]\nBrand voice: [luxury/casual/technical/funny]\n\nStructure:\n1. Product title (SEO-optimized, under 70 chars)\n2. Short description (1-2 sentences for search results)\n3. Main description with:\n   - Hook (problem and solution)\n   - Features with benefits (not just specs)\n   - Social proof mention\n   - Risk reversal (guarantee, returns)\n4. Bullet points (scannable, benefit-focused)\n5. Size/technical specifications table\n6. Call to action\n\nWrite 3 variations: standard, long-form, and minimalist.', shortDescription: 'Write persuasive product descriptions with feature-benefit hooks, social proof, and risk reversal in 3 style variations.', fullDescription: 'Creates three variations of product descriptions in different styles: standard (balanced), long-form (detailed storytelling), and minimalist (short and punchy). Each includes an SEO-optimized title, search-visible short description, feature-benefit descriptions using "so that" framing, social proof integration, risk reversal with guarantee/return mentions, scannable benefit-focused bullet points, technical specifications table, and a compelling CTA. Designed for conversion optimization and SEO performance.' },
+          { title: 'Bullet Point Feature List', difficulty: 'easy', tags: ['E-Commerce','Features'], prompt: 'Transform these product features into benefit-driven bullet points for [product name].\n\nProduct: [name]\nCategory: [type]\nTarget audience: [who buys this]\n\nRaw features:\n[list technical features/specifications here]\n\nFor each feature, rewrite it using the formula:\n[Feature] + "so" + [Benefit to customer]\n\nExample:\n❌ "10,000mAh battery capacity"\n✅ "10,000mAh battery lasts all day so you never scramble for an outlet"\n\nProvide:\n1. 5-7 transformed bullet points (Amazon-style, benefit-first)\n2. 5-7 short-form bullet points (mobile-optimized, 50 chars max)\n3. 3 emotional benefit bullets (how it makes them feel)\n4. Category-specific bullet conventions to follow\n5. A/B testing recommendations for bullet order', shortDescription: 'Transform technical features into benefit-driven bullet points optimized for Amazon, mobile, and emotional appeal.', fullDescription: 'Converts raw product features into three formats of benefit-driven bullets: Amazon-style detailed bullets with "feature + so + benefit" formula, mobile-optimized short bullets under 50 characters, and emotional benefit bullets focusing on how the product makes the customer feel. Includes category-specific conventions and A/B testing recommendations for bullet ordering to maximize conversion rates.' },
+        ]
+      },
+      {
+        name: 'Store Optimization',
+        prompts: [
+          { title: 'Store SEO Audit & Fixes', difficulty: 'medium', tags: ['SEO','E-Commerce'], prompt: 'Perform an SEO audit for my e-commerce store.\n\nStore platform: [Shopify/WooCommerce/BigCommerce/Magento/Custom]\nProduct count: [number]\nMain categories: [list main categories]\nCurrent traffic: [monthly visitors]\nTarget traffic: [monthly goal]\nTop competitors: [list URLs if known]\n\nAudit and provide fixes for:\n1. Product page SEO:\n   - Title tags (length, keyword usage, uniqueness)\n   - Meta descriptions (CTAs, keywords, length)\n   - Product descriptions (original vs manufacturer copy)\n   - Image alt text and file naming\n   - URL structure\n2. Category page SEO:\n   - Hierarchy and internal linking\n   - Content above/below product listings\n3. Technical SEO:\n   - Site speed (Core Web Vitals)\n   - Mobile optimization\n   - XML sitemap and robots.txt\n   - Structured data (Product, Review, Breadcrumb)\n   - Pagination and canonical tags\n4. Off-page SEO:\n   - Link building opportunities\n   - Product review generation\n\nPrioritize fixes by effort vs impact (quick wins first).', shortDescription: 'Complete e-commerce SEO audit with actionable fixes for product pages, categories, and technical SEO elements.', fullDescription: 'Performs a comprehensive SEO audit across product pages (title tags, meta descriptions, image optimization, URL structure), category pages (hierarchy, content, internal linking), technical SEO (Core Web Vitals, mobile, sitemap, structured data with Product and Review schema), and off-page SEO (link building, review generation). Provides prioritized fixes sorted by effort vs. impact with quick wins highlighted for immediate implementation.' },
+          { title: 'Conversion Rate Optimization', difficulty: 'advanced', tags: ['CRO','E-Commerce'], prompt: 'Analyze and optimize the conversion funnel for my e-commerce store.\n\nStore URL: [URL]\nProduct category: [main category]\nCurrent conversion rate: [%]\nIndustry benchmark: [%]\nTop traffic source: [organic/paid/social/email]\nCurrent issues I notice: [cart abandonment/low AOV/poor checkout]\n\nProvide a CRO audit and recommendations for:\n\n1. Homepage optimization:\n   - Hero messaging and value proposition\n   - Navigation clarity\n   - Trust signals placement\n\n2. Product page optimization:\n   - Image quality and zoom functionality\n   - Price anchoring and urgency tactics\n   - Review and social proof placement\n   - Mobile vs desktop differences\n\n3. Cart and checkout:\n   - Abandonment reasons and fixes\n   - Checkout page simplification\n   - Payment options and trust badges\n   - Exit-intent popups\n\n4. Post-purchase:\n   - Thank you page optimization\n   - Upsell/cross-sell opportunities\n   - Review request timing\n\nProvide specific implementation steps with priority ratings.', shortDescription: 'Comprehensive CRO audit covering homepage, product pages, checkout, and post-purchase optimization with priority fixes.', fullDescription: 'Delivers a full conversion rate optimization analysis across the entire customer journey: homepage (hero messaging, navigation, trust signals), product pages (image quality, price anchoring, social proof placement, urgency tactics), cart and checkout (abandonment analysis with specific fixes, page simplification, payment optimization, exit-intent strategies), and post-purchase (thank you page, upsell opportunities, review generation). Every recommendation includes implementation steps, priority rating, and expected impact estimate.' },
+        ]
+      },
+      {
+        name: 'Marketing & Growth',
+        prompts: [
+          { title: 'Product Launch Sequence', difficulty: 'medium', tags: ['Launch','Marketing'], prompt: 'Create a product launch marketing sequence for [product name].\n\nLaunch type: [new product/major update/re-release]\nTarget audience: [describe]\nPre-launch audience: [email list size, social followers]\nLaunch date: [date]\nPrice: $[amount]\nPre-order option: [yes/no]\n\nProvide a complete launch plan:\n\nPRE-LAUNCH (2-4 weeks before):\n1. Teaser campaign (social media countdown)\n2. Waitlist/early access signup\n3. Content marketing (blog posts, videos)\n4. Influencer/affiliate outreach\n5. Email sequence (3 emails)\n\nLAUNCH WEEK:\n1. Launch day email + social announcements\n2. Social proof blitz (reviews, testimonials)\n3. Limited-time offer urgency\n4. Partner cross-promotions\n5. Retargeting campaign setup\n\nPOST-LAUNCH (2 weeks after):\n1. Social proof amplification\n2. Case study/content creation\n3. Feedback collection\n4. Email nurture for non-buyers\n5. Optimization based on early data\n\nInclude: specific email subject lines, social post templates, and timeline.', shortDescription: 'Complete product launch sequence with pre-launch teasers, launch week blitz, and post-launch optimization.', fullDescription: 'Designs a full product launch marketing plan across three phases: pre-launch (teaser campaign, waitlist building, content marketing, influencer outreach, 3-email sequence), launch week (announcements, social proof blitz, urgency offers, partner promotions, retargeting), and post-launch (amplification, case studies, feedback collection, non-buyer nurture, data-driven optimization). Includes specific email subject lines, social media post templates, and a day-by-day timeline with ownership assignments.' },
+          { title: 'Abandoned Cart Recovery', difficulty: 'easy', tags: ['E-Commerce','Recovery'], prompt: 'Design an abandoned cart email recovery sequence for my e-commerce store.\n\nStore: [name]\nProduct type: [category]\nAverage order value: $[amount]\nCurrent cart abandonment rate: [%]\nEmail platform: [Klaviyo/Mailchimp/Shopify Email/Other]\n\nCreate a 3-email abandoned cart sequence:\n\nEmail 1 (1 hour after abandonment):\n- Remind them what they left\n- Reinforce value (benefits, reviews)\n- Subject line: 2 options\n\nEmail 2 (24 hours after):\n- Address objections (free shipping, returns, guarantees)\n- Social proof (best seller, rating)\n- Subject line: 2 options\n\nEmail 3 (72 hours after):\n- Offer discount or incentive\n- Scarcity (low stock, limited time)\n- Subject line: 2 options\n\nAlso provide:\n- SMS alternative for each email\n- Discount strategy (when to offer, how much)\n- Targeting rules (who receives which email)\n- A/B testing plan\n- Recovery rate benchmarks by industry\n- Post-purchase upsell suggestion', shortDescription: 'Build a 3-email abandoned cart recovery sequence with discount strategy, SMS options, and A/B testing plan.', fullDescription: 'Creates a complete abandoned cart recovery system with three strategically timed emails: value reinforcement (1 hour), objection handling (24 hours), and incentive/scarcity (72 hours). Each email includes two subject line options and SMS alternatives. Provides discount strategy guidelines (when to offer and how much based on AOV), segmentation rules for targeted sending, A/B testing plan for continuous optimization, recovery rate benchmarks by industry, and post-purchase upsell/cross-sell recommendations for recovered customers.' },
+        ]
+      }
+    ]
+  }
+];
+
+// ===== RENDER =====
+const nav = document.getElementById('categoryNav');
+const main = document.getElementById('mainContent');
+let currentCategory = 'all';
+let currentPrompt = null;
+
+function renderNav() {
+  nav.innerHTML = `<button class="cat-tab active" onclick="filterCategory('all', this)">All</button>` +
+    categories.map(c => `<button class="cat-tab" onclick="filterCategory('${c.id}', this)">${c.icon} ${c.name}</button>`).join('');
+}
+
+function renderCards(filter = '', categoryFilter = 'all') {
+  let html = '';
+  let totalVisible = 0;
+
+  const filteredCats = categoryFilter === 'all' ? categories : categories.filter(c => c.id === categoryFilter);
+
+  filteredCats.forEach(cat => {
+    let catHtml = '';
+    let catCount = 0;
+
+    cat.subsections.forEach(sub => {
+      const matchingPrompts = sub.prompts.filter(p => {
+        const searchStr = `${p.title} ${p.prompt} ${p.tags.join(' ')} ${sub.name} ${cat.name} ${p.shortDescription || ''} ${p.fullDescription || ''}`.toLowerCase();
+        return searchStr.includes(filter.toLowerCase());
+      });
+
+      if (matchingPrompts.length > 0) {
+        catCount += matchingPrompts.length;
+        catHtml += `
+          <div class="subsection">
+            <div class="subsection-title">${sub.name}</div>
+            <div class="prompts-grid">
+              ${matchingPrompts.map(p => `
+                <div class="prompt-card">
+                  <div class="prompt-card-header">
+                    <div class="prompt-title">${highlightSearch(p.title, filter)}</div>
+                  </div>
+                  <div class="prompt-tags">
+                    <span class="tag ${p.difficulty}">${p.difficulty}</span>
+                    ${p.tags.map(t => `<span class="tag all">${t}</span>`).join('')}
+                  </div>
+                  ${p.shortDescription ? `<div class="prompt-desc">${escapeHtml(p.shortDescription)}</div>` : ''}
+                  <div class="prompt-preview">${escapeHtml(p.prompt)}</div>
+                  <div class="prompt-card-actions">
+                    <button class="copy-btn" onclick="copyPrompt(this, \`${encodeURIComponent(p.prompt)}\`)">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      Copy
+                    </button>
+                    <button class="view-btn" onclick="viewPrompt('${encodeURIComponent(p.title)}', \`${encodeURIComponent(p.prompt)}\`, '${encodeURIComponent(p.fullDescription || '')}')">View Full</button>
+                    ${p.fullDescription ? `<button class="view-btn" onclick="viewDescription('${encodeURIComponent(p.fullDescription)}')">Details</button>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+      }
+    });
+
+    if (catCount > 0) {
+      totalVisible += catCount;
+      html += `
+        <div class="category-section visible" data-category="${cat.id}">
+          <div class="section-header">
+            <div class="section-icon" style="background:${cat.color}20;color:${cat.color}">${cat.icon}</div>
+            <h2>${cat.name}</h2>
+            <span class="count">${catCount} prompts</span>
+          </div>
+          ${catHtml}
+        </div>`;
+    }
+  });
+
+  main.innerHTML = html;
+  document.getElementById('visibleCount').textContent = totalVisible;
+
+  const emptyState = document.getElementById('emptyState');
+  if (totalVisible === 0) {
+    emptyState.classList.add('visible');
+    main.style.display = 'none';
+  } else {
+    emptyState.classList.remove('visible');
+    main.style.display = 'block';
+  }
+}
+
+function highlightSearch(text, query) {
+  if (!query) return text;
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return text.replace(regex, '<mark style="background:#6c3cff40;color:var(--text);border-radius:2px;padding:0 2px">$1</mark>');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ===== ACTIONS =====
+function copyPrompt(btn, encoded) {
+  const text = decodeURIComponent(encoded);
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+    showToast();
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+    }, 2000);
+  });
+}
+
+function viewPrompt(encodedTitle, encodedPrompt, encodedDesc) {
+  document.getElementById('modalTitle').textContent = decodeURIComponent(encodedTitle);
+  document.getElementById('modalPrompt').textContent = decodeURIComponent(encodedPrompt);
+  const descEl = document.getElementById('modalDescription');
+  const desc = decodeURIComponent(encodedDesc || '');
+  if (desc) {
+    descEl.textContent = desc;
+    descEl.style.display = 'block';
+  } else {
+    descEl.style.display = 'none';
+  }
+  currentPrompt = decodeURIComponent(encodedPrompt);
+  document.getElementById('viewModal').classList.add('active');
+}
+
+function viewDescription(encodedDesc) {
+  const desc = decodeURIComponent(encodedDesc);
+  document.getElementById('modalTitle').textContent = 'About This Prompt';
+  document.getElementById('modalPrompt').textContent = desc;
+  document.getElementById('modalDescription').style.display = 'none';
+  currentPrompt = desc;
+  document.getElementById('viewModal').classList.add('active');
+}
+
+function copyFromModal() {
+  navigator.clipboard.writeText(currentPrompt).then(() => {
+    showToast();
+  });
+}
+
+function closeModal() {
+  document.getElementById('viewModal').classList.remove('active');
+}
+
+function showToast() {
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+function searchPrompts(query) {
+  renderCards(query, currentCategory);
+}
+
+function filterCategory(id, btn) {
+  currentCategory = id;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const searchVal = document.querySelector('.search-input').value;
+  renderCards(searchVal, id);
+}
+
+function showAll() {
+  currentCategory = 'all';
+  document.querySelector('.search-input').value = '';
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.cat-tab').classList.add('active');
+  renderCards('', 'all');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== DONATION =====
+function openDonation() {
+  document.getElementById('donationModal').classList.add('active');
+  document.getElementById('donationForm').classList.remove('hidden');
+  document.getElementById('donationForm').style.display = 'block';
+  document.getElementById('thankYou').classList.remove('show');
+}
+
+function closeDonation() {
+  document.getElementById('donationModal').classList.remove('active');
+}
+
+function selectAmount(btn, amount) {
+  document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function submitDonation() {
+  document.getElementById('donationForm').style.display = 'none';
+  document.getElementById('thankYou').classList.add('show');
+}
+
+// ===== BACK TO TOP =====
+window.addEventListener('scroll', () => {
+  document.getElementById('backToTop').classList.toggle('visible', window.scrollY > 400);
+});
+
+// ===== KEYBOARD =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeDonation();
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    document.querySelector('.search-input').focus();
+  }
+});
+
+// ===== INIT =====
+renderNav();
+renderCards();
+</script>
+</body>
+</html>
