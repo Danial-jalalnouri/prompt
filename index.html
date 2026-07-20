@@ -392,6 +392,13 @@
     .generator-section {
       max-width: 800px; margin: 0 auto; padding: 32px 24px;
     }
+    .generate-ai-btn {
+      padding: 8px 18px; border-radius: 20px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-dim); font-family: inherit; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .generate-ai-btn:hover { border-color: var(--text-muted); color: var(--text); }
     .generator-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -521,6 +528,49 @@
       content: ''; flex: 1; height: 1px; background: var(--border);
     }
 
+    /* ===== SITE NOTICE ===== */
+    .site-notice {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 3000;
+      background: #12121aee;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      padding: 20px 24px;
+      display: none;
+    }
+    .notice-content {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 20px; flex-wrap: wrap;
+    }
+    .notice-text strong {
+      display: block; font-size: 14px; color: var(--text); margin-bottom: 4px;
+    }
+    .notice-text p {
+      margin: 0; font-size: 13px; color: var(--text-dim); line-height: 1.5;
+    }
+    .notice-text a { color: var(--accent); text-decoration: none; }
+    .notice-text a:hover { text-decoration: underline; }
+    .notice-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .notice-btn {
+      padding: 10px 20px; border-radius: var(--radius-sm);
+      background: var(--accent); color: #fff; border: none;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .notice-btn:hover { background: var(--accent-glow); }
+    .notice-link {
+      font-size: 13px; color: var(--text-muted); text-decoration: none;
+      transition: color 0.2s; white-space: nowrap;
+    }
+    .notice-link:hover { color: var(--accent); }
+    @media (max-width: 768px) {
+      .notice-content { flex-direction: column; text-align: center; }
+      .notice-actions { justify-content: center; }
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .hero h1 { font-size: 24px; }
@@ -577,7 +627,7 @@
 </div>
 
 <!-- PROMPT GENERATOR -->
-<div class="generator-section">
+<div class="generator-section" id="generatorSection" style="display:none">
   <div class="generator-card">
     <div class="generator-badge">✨ AI Powered</div>
     <h2>Generate <span>Your Perfect Prompt</span></h2>
@@ -680,7 +730,22 @@
 <footer>
   <p>PromptVault — Free AI Prompt Library. Made with care for the community.</p>
   <p style="margin-top:8px;">Prompts are community-curated. Use responsibly.</p>
+  <p style="margin-top:12px;"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Service</a></p>
 </footer>
+
+<!-- SITE NOTICE -->
+<div id="siteNotice" class="site-notice" style="display:none!important">
+  <div class="notice-content">
+    <div class="notice-text">
+      <strong>🍪 Site Notice</strong>
+      <p>We do not use cookies on this site. Some third-party services (Google Fonts, Puter API) may process limited data when you use the site. By continuing to browse, you acknowledge our <a href="privacy.html">Privacy Policy</a>.</p>
+    </div>
+    <div class="notice-actions">
+      <button class="notice-btn accept" onclick="acceptNotice()">Accept & Continue</button>
+      <a href="privacy.html" class="notice-link">Learn More</a>
+    </div>
+  </div>
+</div>
 
 <script>
 // ===== PROMPT DATA =====
@@ -1143,7 +1208,11 @@ let currentPrompt = null;
 
 function renderNav() {
   nav.innerHTML = `<button class="cat-tab active" onclick="filterCategory('all', this)">All</button>` +
-    categories.map(c => `<button class="cat-tab" onclick="filterCategory('${c.id}', this)">${c.icon} ${c.name}</button>`).join('');
+    categories.map(c => `<button class="cat-tab" onclick="filterCategory('${c.id}', this)">${c.icon} ${c.name}</button>`).join('') +
+    `<div style="width:100%;text-align:center;margin-top:4px;">
+      <button class="generate-ai-btn" onclick="showGenerator()">✨ Generate Prompt by AI</button>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">AI generation uses Puter — free tier available, usage may vary by account</div>
+    </div>`;
 }
 
 function renderCards(filter = '', categoryFilter = 'all') {
@@ -1423,9 +1492,37 @@ function copyGeneratedPrompt() {
   });
 }
 
+// ===== SITE NOTICE =====
+function acceptNotice() {
+  localStorage.setItem('pv_notice_accepted', '1');
+  document.getElementById('siteNotice').style.display = 'none';
+}
+
+function showNotice() {
+  var b = document.getElementById('siteNotice');
+  b.style.cssText = 'display:block!important;position:fixed;bottom:0;left:0;right:0;z-index:99999;';
+}
+
+function checkNotice() {
+  try {
+    if (!localStorage.getItem('pv_notice_accepted')) {
+      showNotice();
+    }
+  } catch(e) {
+    showNotice();
+  }
+}
+
 // ===== INIT =====
 renderNav();
 renderCards();
+checkNotice();
+
+function showGenerator() {
+  var section = document.getElementById('generatorSection');
+  section.style.display = 'block';
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 </script>
 </body>
 </html>
